@@ -1,3 +1,9 @@
+## Kommentteja vasta lauantaina! 
+ryhmäteknisistä syistä
+
+
+
+
 Tämä on tehtäväpohja, jonka forkkasit Tietorakenteiden harjoitustyön suorittamista varten.
 
 Pohja tukee valmiiksi ant ja maven pohjaisia java-projekteja.

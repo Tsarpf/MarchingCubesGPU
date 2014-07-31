@@ -12,6 +12,7 @@ DirectXApp::~DirectXApp()
 
 bool DirectXApp::init()
 {
+    /*
     UINT32 AdapterOrdinal = 0;
     D3DDEVTYPE DeviceType = D3DDEVTYPE_HAL;
     D3DCAPS9 caps;
@@ -43,11 +44,43 @@ bool DirectXApp::init()
         &params,
         &m_pd3dDevice
         );
-
+    */
 
 }
 
 bool DirectXApp::run()
+{
+
+}
+
+
+bool DirectXApp::createWindow(HINSTANCE hInstance)
+{
+
+    WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = 0;
+    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = L"TestWindowClass";
+    wcex.hIconSm = NULL;
+    
+    if (!RegisterClassEx(&wcex))
+        return FALSE;
+
+
+    RECT rc = { 0, 0, 640, 480 };
+    
+    //HWND hwnd = CreateWindow(L"Window
+}
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
 }

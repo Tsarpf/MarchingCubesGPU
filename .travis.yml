@@ -1,8 +1,0 @@
-language: java
-jdk:
-  - oraclejdk7
-  - openjdk6
-notifications:
-  email: false
-
-script: "./run_tests.sh"

@@ -46,6 +46,8 @@ bool DirectXApp::init()
         );
     */
 
+	if(FAILED(InitWindow(hInstance, nCmdShow)))
+		return false;
 }
 
 bool DirectXApp::run()
@@ -54,7 +56,7 @@ bool DirectXApp::run()
 }
 
 
-bool DirectXApp::createWindow(HINSTANCE hInstance)
+bool DirectXApp::createWindow(HINSTANCE hInstance, int nCmdShow)
 {
 
     WNDCLASSEX wcex;
@@ -75,9 +77,20 @@ bool DirectXApp::createWindow(HINSTANCE hInstance)
         return FALSE;
 
 
+	g_hInst = hInstance;
     RECT rc = { 0, 0, 640, 480 };
-    
-    //HWND hwnd = CreateWindow(L"Window
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+
+	g_hWnd = CreateWindow(L"WindowClass", L"Hello world", WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance,
+		NULL);
+
+	if(g_hWnd)
+		return E_FAIL;
+
+	ShowWindow(g_hWnd, nCmdShow);
+
+	return S_OK;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

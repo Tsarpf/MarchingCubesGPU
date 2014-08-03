@@ -4,6 +4,8 @@
 #include <Windows.h>
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+HINSTANCE   g_hInst = NULL;
+HWND        g_hWnd = NULL;
 
 class DirectXApp
 {
@@ -13,6 +15,6 @@ public:
     bool init();
     bool run();
 private:
-    bool createWindow(HINSTANCE);
+    bool createWindow(HINSTANCE, int);
 };
 

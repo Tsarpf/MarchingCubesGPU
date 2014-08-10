@@ -4,17 +4,16 @@
 #include <Windows.h>
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-HINSTANCE   g_hInst = NULL;
-HWND        g_hWnd = NULL;
+
 
 class DirectXApp
 {
 public:
     DirectXApp();
     ~DirectXApp();
-    bool init();
+    bool init(HINSTANCE, HINSTANCE, LPWSTR, int);
     bool run();
 private:
-    bool createWindow(HINSTANCE, int);
+    HRESULT createWindow(HINSTANCE, int);
 };
 

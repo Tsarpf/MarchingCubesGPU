@@ -4,6 +4,10 @@
 //HWND g_hWnd = NULL;
 HINSTANCE g_hInst = NULL;
 HWND g_hWnd = NULL;
+IDXGISwapChain* g_SwapChain = NULL;
+ID3D11Device* g_d3dDevice = NULL;
+ID3D11DeviceContext* g_ImmediateContext = NULL;
+ID3D11RenderTargetView* g_RenderTargetView = NULL;
 
 DirectXApp::DirectXApp()
 {
@@ -53,19 +57,101 @@ bool DirectXApp::init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	if(FAILED(createWindow(hInstance, nCmdShow)))
 		return false;
 
+    if (FAILED(initDX()))
+        return false;
+
     return true;
+}
+
+bool DirectXApp::initDX()
+{
+
+    D3D_FEATURE_LEVEL featureLevels[] =
+    {
+        D3D_FEATURE_LEVEL_11_0
+    };
+
+    UINT width = 640;
+    UINT height = 480;
+
+    UINT featureLevelCount = ARRAYSIZE(featureLevels);
+
+    DXGI_SWAP_CHAIN_DESC sd;
+    ZeroMemory(&sd, sizeof(sd));
+    sd.BufferCount = 1;
+    sd.BufferDesc.Width = width;
+    sd.BufferDesc.Height = height;
+    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sd.BufferDesc.RefreshRate.Numerator = 60;
+    sd.BufferDesc.RefreshRate.Denominator = 1;
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.OutputWindow = g_hWnd;
+    sd.SampleDesc.Count = 1;
+    sd.SampleDesc.Quality = 0;
+    sd.Windowed = TRUE;
+
+
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevels, featureLevelCount,
+        D3D11_SDK_VERSION, &sd, &g_SwapChain, &g_d3dDevice, NULL, &g_ImmediateContext);
+    if (FAILED(hr))
+        return hr;
+
+    ID3D11Texture2D* backBuffer = NULL;
+
+    //this saves the position of swap chain back buffer to backBuffer
+    hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+    if (FAILED(hr))
+        return hr;
+
+
+    
+    hr = g_d3dDevice->CreateRenderTargetView(backBuffer, NULL, &g_RenderTargetView);
+    //release memory and close threads used by COM object. Only closes texture object, doesn't destroy the actual back buffer
+    backBuffer->Release();
+    if (FAILED(hr))
+        return hr;
+
+    g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
+
+    D3D11_VIEWPORT vp;
+    vp.Width = (float)width;
+    vp.Height= (float)height;
+
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    g_ImmediateContext->RSSetViewports(1, &vp);
+
+
+    return S_OK;
 }
 
 bool DirectXApp::run()
 {
     MSG msg = { 0 };
-    while (GetMessage(&msg, NULL, 0, 0))
+    //while (GetMessage(&msg, NULL, 0, 0
+    while(msg.message != WM_QUIT)
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            render();
+        }
     }
 
     return true;
+}
+
+void DirectXApp::render()
+{
+    float clearColor[4] = { 0.0f, 0.125f, 0.2f, 1.0f };
+    g_ImmediateContext->ClearRenderTargetView(g_RenderTargetView, clearColor);
+    g_SwapChain->Present(0, 0);
 }
 
 

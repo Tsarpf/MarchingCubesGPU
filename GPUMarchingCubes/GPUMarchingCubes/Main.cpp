@@ -2,6 +2,7 @@
 #include <Windows.h>    // include the basic windows header file
 #include "DirectXApp.h"
 
+
 //int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 //{
 //    MessageBox(NULL, L"Hello World!", L"Testing one two three!", MB_ICONEXCLAMATION | MB_OK);

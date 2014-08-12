@@ -60,9 +60,17 @@ bool DirectXApp::init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (FAILED(initDX()))
         return false;
 
+	if (FAILED(compileAndEnableShaders()))
+		return false;
+
     return true;
 }
 
+bool DirectXApp::compileAndEnableShaders()
+{
+
+	return true;
+}
 bool DirectXApp::initDX()
 {
 

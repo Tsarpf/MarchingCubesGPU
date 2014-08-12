@@ -19,5 +19,6 @@ private:
     HRESULT createWindow(HINSTANCE, int);
     bool initDX();
     void render();
+	bool compileAndEnableShaders();
 };
 

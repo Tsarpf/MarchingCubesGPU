@@ -18,43 +18,9 @@ DirectXApp::~DirectXApp()
 {
 }
 
-bool DirectXApp::init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-    /*
-    UINT32 AdapterOrdinal = 0;
-    D3DDEVTYPE DeviceType = D3DDEVTYPE_HAL;
-    D3DCAPS9 caps;
-    m_pD3D->GetDeviceCaps(AdapterOrdinal, DeviceType, &caps); // caps bits
-
-    D3DPRESENT_PARAMETERS params;
-    ZeroMemory(&params, sizeof(D3DPRESENT_PARAMETERS));
-
-    // Swap chain parameters:
-    params.hDeviceWindow = m_hWnd;
-    params.AutoDepthStencilFormat = D3DFMT_D24X8;
-    params.BackBufferFormat = D3DFMT_X8R8G8B8;
-    params.MultiSampleQuality = D3DMULTISAMPLE_NONE;
-    params.MultiSampleType = D3DMULTISAMPLE_NONE;
-    params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    params.Windowed = true;
-    params.PresentationInterval = 0;
-    params.BackBufferCount = 2;
-    params.BackBufferWidth = 0;
-    params.BackBufferHeight = 0;
-    params.EnableAutoDepthStencil = true;
-    params.Flags = 2;
-
-    m_pD3D->CreateDevice(
-        0,
-        D3DDEVTYPE_HAL,
-        m_hWnd,
-        64,
-        &params,
-        &m_pd3dDevice
-        );
-    */
-
-	if(FAILED(createWindow(hInstance, nCmdShow)))
+  	if(FAILED(createWindow(hInstance, nCmdShow)))
 		return false;
 
     if (FAILED(initDX()))
@@ -66,19 +32,80 @@ bool DirectXApp::init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     return true;
 }
 
-bool DirectXApp::compileAndEnableShaders()
+HRESULT DirectXApp::compileAndEnableShaders()
 {
+	HRESULT hr = S_OK;
+
+	//Vertex shader
+	ID3DBlob* vsBlob = NULL;
+	hr = compileShaderFromFile(L"VertexShader.hlsl", "main", "vs_4_0", &vsBlob);
+
+	if (FAILED(hr))
+	{
+		vsBlob->Release();
+		return hr;
+	}
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	
 
 	return true;
 }
+
+HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob)
+{
+	HRESULT hr = S_OK;
+
+	/*
+#if defined( DEBUG ) || defined( _DEBUG )
+	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows 
+	// the shaders to be optimized and to run exactly the way they will run in 
+	// the release configuration of this program.
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+	*/
+
+	ID3DBlob* errorBlob;
+	//DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+
+
+	hr = D3DX11CompileFromFile(FileName, NULL, NULL, EntryPoint, ShaderModel,
+		NULL, NULL, NULL, OutBlob, &errorBlob, NULL);
+
+	if (FAILED(hr))
+	{
+		if (errorBlob != NULL)
+		{
+			OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		}
+		if (errorBlob)
+		{
+			errorBlob->Release();
+		}
+		return hr;
+	}
+
+	if (errorBlob) errorBlob->Release();
+
+	return S_OK;
+
+}
+
 bool DirectXApp::initDX()
 {
 
+	//Only allow directx 11
     D3D_FEATURE_LEVEL featureLevels[] =
     {
         D3D_FEATURE_LEVEL_11_0
     };
 
+	//Window and viewport size
     UINT width = 640;
     UINT height = 480;
 
@@ -90,10 +117,12 @@ bool DirectXApp::initDX()
     sd.BufferDesc.Width = width;
     sd.BufferDesc.Height = height;
     sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//Refresh rate
     sd.BufferDesc.RefreshRate.Numerator = 60;
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.OutputWindow = g_hWnd;
+	//Multisampling
     sd.SampleDesc.Count = 1;
     sd.SampleDesc.Quality = 0;
     sd.Windowed = TRUE;
@@ -135,10 +164,9 @@ bool DirectXApp::initDX()
     return S_OK;
 }
 
-bool DirectXApp::run()
+bool DirectXApp::Run()
 {
     MSG msg = { 0 };
-    //while (GetMessage(&msg, NULL, 0, 0
     while(msg.message != WM_QUIT)
     {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -155,21 +183,34 @@ bool DirectXApp::run()
     return true;
 }
 
+/* Renders a frame */
 void DirectXApp::render()
 {
+
+	//Background color
     float clearColor[4] = { 0.0f, 0.125f, 0.2f, 1.0f };
+
+	//Draw background color
     g_ImmediateContext->ClearRenderTargetView(g_RenderTargetView, clearColor);
+
+	//Switch back buffer and front buffer to show what we've drawn. 
+	//ie. present it.
     g_SwapChain->Present(0, 0);
 }
 
 
+/* Create a basic window using windows api*/
 HRESULT DirectXApp::createWindow(HINSTANCE hInstance, int nCmdShow)
 {
 
     WNDCLASSEX wcex = {};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
+
+	//lpfn == long pointer to a function, WndProc == Windows Procedure 
+	//Long Pointer to the Windows Procedure function
     wcex.lpfnWndProc = WndProc;
+
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
@@ -201,6 +242,7 @@ HRESULT DirectXApp::createWindow(HINSTANCE hInstance, int nCmdShow)
 	return S_OK;
 }
 
+/* Windows Procedure function used in showing and drawing the window*/
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     PAINTSTRUCT ps;

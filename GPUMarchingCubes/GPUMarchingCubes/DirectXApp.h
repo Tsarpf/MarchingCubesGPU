@@ -13,12 +13,14 @@ class DirectXApp
 public:
     DirectXApp();
     ~DirectXApp();
-    bool init(HINSTANCE, HINSTANCE, LPWSTR, int);
-    bool run();
+    bool Init(HINSTANCE, HINSTANCE, LPWSTR, int);
+    bool Run();
 private:
     HRESULT createWindow(HINSTANCE, int);
     bool initDX();
     void render();
-	bool compileAndEnableShaders();
+	HRESULT compileAndEnableShaders();
+	HRESULT compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob));
+	
 };
 

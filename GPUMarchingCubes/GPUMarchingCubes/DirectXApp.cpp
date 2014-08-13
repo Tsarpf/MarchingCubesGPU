@@ -9,6 +9,13 @@ ID3D11Device* g_d3dDevice = NULL;
 ID3D11DeviceContext* g_ImmediateContext = NULL;
 ID3D11RenderTargetView* g_RenderTargetView = NULL;
 
+ID3D11VertexShader* g_VertexShader = NULL;
+ID3D11InputLayout* g_VertexLayout = NULL;
+
+ID3D11PixelShader* g_PixelShader = NULL;
+
+ID3D11Buffer* g_VertexBuffer = NULL;
+
 DirectXApp::DirectXApp()
 {
 }
@@ -46,14 +53,83 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		return hr;
 	}
 
+	hr = g_d3dDevice->CreateVertexShader(vsBlob->GetBufferPointer(),
+		vsBlob->GetBufferSize(), NULL, &g_VertexShader);
+
+	if (FAILED(hr))
+	{
+		vsBlob->Release();
+	}
+
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	
+	//unsigned int numElements 
+	unsigned int numElements = ARRAYSIZE(layout);
 
-	return true;
+	hr = g_d3dDevice->CreateInputLayout(layout, numElements, vsBlob->GetBufferPointer(),
+										vsBlob->GetBufferSize(), &g_VertexLayout);
+
+	vsBlob->Release();
+
+	if (FAILED(hr))
+		return hr;
+
+	//set input layout
+	g_ImmediateContext->IASetInputLayout(g_VertexLayout);
+
+
+	ID3DBlob* psBlob = NULL;
+
+	hr = compileShaderFromFile(L"PixelShader.hlsl", "main", "ps_4_0", &psBlob);
+
+	if (FAILED(hr))
+		return hr;
+
+	hr = g_d3dDevice->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &g_PixelShader);
+	psBlob->Release();
+
+
+	if (FAILED(hr))
+		return hr;
+
+
+	struct SimpleVertex
+	{
+		XMFLOAT3 Pos;
+	};
+
+	SimpleVertex vertices[] =
+	{
+		XMFLOAT3(0.0f, 0.5f, 0.5f),
+		XMFLOAT3(0.5f, -0.5f, 0.5f),
+		XMFLOAT3(-0.5f, -0.5f, 0.5f)
+	};
+
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * 3;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	ZeroMemory(&initData, sizeof(initData));
+	initData.pSysMem = vertices;
+	hr = g_d3dDevice->CreateBuffer(&bd, &initData, &g_VertexBuffer);
+
+	if (FAILED(hr))
+		return hr;
+
+
+	unsigned int stride = sizeof(SimpleVertex);
+	unsigned int offset = 0;
+	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	return S_OK;
 }
 
 HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob)

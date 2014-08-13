@@ -5,6 +5,8 @@
 #include <D3D11.h>
 #include <D3DX11.h>
 #include <xnamath.h>
+#include <d3dcompiler.h>
+
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -21,7 +23,6 @@ private:
     bool initDX();
     void render();
 	HRESULT compileAndEnableShaders();
-	HRESULT compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob));
-	
+	HRESULT compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob);
 };
 

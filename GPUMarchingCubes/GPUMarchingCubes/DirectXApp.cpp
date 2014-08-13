@@ -4,6 +4,9 @@
 //HWND g_hWnd = NULL;
 HINSTANCE g_hInst = NULL;
 HWND g_hWnd = NULL;
+
+D3D_DRIVER_TYPE g_DriverType = D3D_DRIVER_TYPE_NULL;
+
 IDXGISwapChain* g_SwapChain = NULL;
 ID3D11Device* g_d3dDevice = NULL;
 ID3D11DeviceContext* g_ImmediateContext = NULL;
@@ -15,6 +18,11 @@ ID3D11InputLayout* g_VertexLayout = NULL;
 ID3D11PixelShader* g_PixelShader = NULL;
 
 ID3D11Buffer* g_VertexBuffer = NULL;
+
+struct SimpleVertex
+{
+	XMFLOAT3 Pos;
+};
 
 DirectXApp::DirectXApp()
 {
@@ -59,15 +67,16 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	if (FAILED(hr))
 	{
 		vsBlob->Release();
+		return hr;
 	}
 
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	//unsigned int numElements 
-	unsigned int numElements = ARRAYSIZE(layout);
+	UINT numElements = ARRAYSIZE(layout);
 
 	hr = g_d3dDevice->CreateInputLayout(layout, numElements, vsBlob->GetBufferPointer(),
 										vsBlob->GetBufferSize(), &g_VertexLayout);
@@ -95,12 +104,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	if (FAILED(hr))
 		return hr;
 
-
-	struct SimpleVertex
-	{
-		XMFLOAT3 Pos;
-	};
-
+	//Vertex buffer
 	SimpleVertex vertices[] =
 	{
 		XMFLOAT3(0.0f, 0.5f, 0.5f),
@@ -125,8 +129,11 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		return hr;
 
 
-	unsigned int stride = sizeof(SimpleVertex);
-	unsigned int offset = 0;
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	g_ImmediateContext->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
+
+
 	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return S_OK;
@@ -136,7 +143,8 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 {
 	HRESULT hr = S_OK;
 
-	/*
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+
 #if defined( DEBUG ) || defined( _DEBUG )
 	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
 	// Setting this flag improves the shader debugging experience, but still allows 
@@ -144,7 +152,6 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 	// the release configuration of this program.
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
 #endif
-	*/
 
 	ID3DBlob* errorBlob;
 	//DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -174,50 +181,49 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 
 bool DirectXApp::initDX()
 {
-
 	//Only allow directx 11
-    D3D_FEATURE_LEVEL featureLevels[] =
-    {
-        D3D_FEATURE_LEVEL_11_0
-    };
+	D3D_FEATURE_LEVEL featureLevels[] =
+	{
+		D3D_FEATURE_LEVEL_11_0
+	};
 
 	//Window and viewport size
-    UINT width = 640;
-    UINT height = 480;
+	UINT width = 640;
+	UINT height = 480;
 
-    UINT featureLevelCount = ARRAYSIZE(featureLevels);
+	UINT featureLevelCount = ARRAYSIZE(featureLevels);
 
-    DXGI_SWAP_CHAIN_DESC sd;
-    ZeroMemory(&sd, sizeof(sd));
-    sd.BufferCount = 1;
-    sd.BufferDesc.Width = width;
-    sd.BufferDesc.Height = height;
-    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_SWAP_CHAIN_DESC sd;
+	ZeroMemory(&sd, sizeof(sd));
+	sd.BufferCount = 1;
+	sd.BufferDesc.Width = width;
+	sd.BufferDesc.Height = height;
+	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	//Refresh rate
-    sd.BufferDesc.RefreshRate.Numerator = 60;
-    sd.BufferDesc.RefreshRate.Denominator = 1;
-    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    sd.OutputWindow = g_hWnd;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.OutputWindow = g_hWnd;
 	//Multisampling
-    sd.SampleDesc.Count = 1;
-    sd.SampleDesc.Quality = 0;
-    sd.Windowed = TRUE;
+	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Quality = 0;
+	sd.Windowed = TRUE;
 
+	g_DriverType = D3D_DRIVER_TYPE_HARDWARE;
 
-    HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevels, featureLevelCount,
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL, g_DriverType, NULL, 0, featureLevels, featureLevelCount,
         D3D11_SDK_VERSION, &sd, &g_SwapChain, &g_d3dDevice, NULL, &g_ImmediateContext);
+
     if (FAILED(hr))
         return hr;
 
     ID3D11Texture2D* backBuffer = NULL;
 
     //this saves the position of swap chain back buffer to backBuffer
-    hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+    hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
     if (FAILED(hr))
         return hr;
 
-
-    
     hr = g_d3dDevice->CreateRenderTargetView(backBuffer, NULL, &g_RenderTargetView);
     //release memory and close threads used by COM object. Only closes texture object, doesn't destroy the actual back buffer
     backBuffer->Release();
@@ -269,6 +275,10 @@ void DirectXApp::render()
 	//Draw background color
     g_ImmediateContext->ClearRenderTargetView(g_RenderTargetView, clearColor);
 
+	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
+	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
+	g_ImmediateContext->Draw(3, 0);
+
 	//Switch back buffer and front buffer to show what we've drawn. 
 	//ie. present it.
     g_SwapChain->Present(0, 0);
@@ -299,7 +309,7 @@ HRESULT DirectXApp::createWindow(HINSTANCE hInstance, int nCmdShow)
     wcex.hIconSm = NULL;
     
     if (!RegisterClassEx(&wcex))
-        return FALSE;
+        return E_FAIL;
 
 
 	g_hInst = hInstance;

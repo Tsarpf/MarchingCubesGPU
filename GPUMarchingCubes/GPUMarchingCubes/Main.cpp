@@ -14,8 +14,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     DirectXApp dxapp;
     
-    if(dxapp.init(hInstance, hPrevInstance, lpCmdLine, nCmdShow))
-        dxapp.run();
+    if(dxapp.Init(hInstance, hPrevInstance, lpCmdLine, nCmdShow))
+        dxapp.Run();
     
     //return (int)msg.
 }

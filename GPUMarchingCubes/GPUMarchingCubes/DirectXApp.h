@@ -25,6 +25,7 @@ private:
 	HRESULT compileAndEnableShaders();
 	HRESULT compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob);
 	HRESULT setupConstantBuffer();
+	HRESULT createDepthStencil();
 	HRESULT setupVertexAndIndexBuffer();
 
 	//Window and viewport size

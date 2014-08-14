@@ -13,15 +13,18 @@ ID3D11DeviceContext* g_ImmediateContext = NULL;
 ID3D11RenderTargetView* g_RenderTargetView = NULL;
 
 ID3D11VertexShader* g_VertexShader = NULL;
-ID3D11InputLayout* g_VertexLayout = NULL;
-
 ID3D11PixelShader* g_PixelShader = NULL;
+
+ID3D11InputLayout* g_VertexLayout = NULL;
 
 ID3D11Buffer* g_VertexBuffer = NULL;
 ID3D11Buffer* g_IndexBuffer = NULL;
-
-
 ID3D11Buffer* g_ConstantBuffer = NULL;
+
+ID3D11Texture2D* g_DepthStencil = NULL;
+ID3D11DepthStencilView* g_DepthStencilView = NULL;
+
+
 
 XMMATRIX g_World;
 XMMATRIX g_View;
@@ -55,8 +58,13 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
   	if(FAILED(createWindow(hInstance, nCmdShow)))
 		return false;
 
+
+
     if (FAILED(initDX()))
         return false;
+
+	if (FAILED(createDepthStencil()))
+		return false;
 
 	if (FAILED(compileAndEnableShaders()))
 		return false;
@@ -68,6 +76,41 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 		return false;
 
     return true;
+}
+
+HRESULT DirectXApp::createDepthStencil()
+{
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = m_width;
+	descDepth.Height = m_height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	HRESULT hr = g_d3dDevice->CreateTexture2D(&descDepth, NULL, &g_DepthStencil);
+	if (FAILED(hr))
+		return hr;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = g_d3dDevice->CreateDepthStencilView(g_DepthStencil, &descDSV, &g_DepthStencilView);
+
+	g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
+
+
+	if (FAILED(hr))
+		return hr;
 }
 
 HRESULT DirectXApp::setupConstantBuffer()
@@ -319,7 +362,8 @@ bool DirectXApp::initDX()
     if (FAILED(hr))
         return hr;
 
-    g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
+	//moved to createDepthStencil
+    //g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
 
     D3D11_VIEWPORT vp;
     vp.Width = (float)m_width;
@@ -366,6 +410,11 @@ void DirectXApp::render()
     g_ImmediateContext->ClearRenderTargetView(g_RenderTargetView, clearColor);
 
 
+	//Reset depth buffer to max depth
+	g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+
+	//Constant buffer is what we'll transfer to the user
 	ConstantBuffer cb;
 	cb.m_World = XMMatrixTranspose(g_World);
 	cb.m_View = XMMatrixTranspose(g_View);
@@ -375,6 +424,8 @@ void DirectXApp::render()
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
 	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
+
+	//Draws the 36 indices currently bound to the device
 	g_ImmediateContext->DrawIndexed(36, 0, 0);
 
 	//Switch back buffer and front buffer to show what we've drawn. 

@@ -19,6 +19,20 @@ ID3D11PixelShader* g_PixelShader = NULL;
 
 ID3D11Buffer* g_VertexBuffer = NULL;
 
+ID3D11Buffer* g_ConstantBuffer = NULL;
+
+XMMATRIX g_World;
+XMMATRIX g_View;
+XMMATRIX g_Projection;
+
+
+struct ConstantBuffer
+{
+	XMMATRIX mWorld;
+	XMMATRIX mView;
+	XMMATRIX mProjection;
+};
+
 struct SimpleVertex
 {
 	XMFLOAT3 Pos;
@@ -47,6 +61,31 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     return true;
 }
 
+HRESULT DirectXApp::setupMatrices()
+{
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(ConstantBuffer);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	HRESULT hr = g_d3dDevice->CreateBuffer(&bd, NULL, &g_ConstantBuffer);
+	if (FAILED(hr))
+		return hr;
+
+	g_World = XMMatrixIdentity();
+
+	XMVECTOR eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
+	XMVECTOR at = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	g_View = XMMatrixLookAtLH(eye, at, up);
+
+	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_width / (FLOAT)m_height, 0.01f, 100.0f);
+
+
+	return S_OK;
+}
+
 HRESULT DirectXApp::compileAndEnableShaders()
 {
 	HRESULT hr = S_OK;
@@ -73,6 +112,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	//unsigned int numElements 
@@ -187,17 +227,14 @@ bool DirectXApp::initDX()
 		D3D_FEATURE_LEVEL_11_0
 	};
 
-	//Window and viewport size
-	UINT width = 640;
-	UINT height = 480;
 
 	UINT featureLevelCount = ARRAYSIZE(featureLevels);
 
 	DXGI_SWAP_CHAIN_DESC sd;
 	ZeroMemory(&sd, sizeof(sd));
 	sd.BufferCount = 1;
-	sd.BufferDesc.Width = width;
-	sd.BufferDesc.Height = height;
+	sd.BufferDesc.Width = m_width;
+	sd.BufferDesc.Height = m_height;
 	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	//Refresh rate
 	sd.BufferDesc.RefreshRate.Numerator = 60;
@@ -233,8 +270,8 @@ bool DirectXApp::initDX()
     g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
 
     D3D11_VIEWPORT vp;
-    vp.Width = (float)width;
-    vp.Height= (float)height;
+    vp.Width = (float)m_width;
+    vp.Height= (float)m_height;
 
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;

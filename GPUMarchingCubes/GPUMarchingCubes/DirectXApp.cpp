@@ -18,6 +18,8 @@ ID3D11InputLayout* g_VertexLayout = NULL;
 ID3D11PixelShader* g_PixelShader = NULL;
 
 ID3D11Buffer* g_VertexBuffer = NULL;
+ID3D11Buffer* g_IndexBuffer = NULL;
+
 
 ID3D11Buffer* g_ConstantBuffer = NULL;
 
@@ -28,14 +30,15 @@ XMMATRIX g_Projection;
 
 struct ConstantBuffer
 {
-	XMMATRIX mWorld;
-	XMMATRIX mView;
-	XMMATRIX mProjection;
+	XMMATRIX m_World;
+	XMMATRIX m_View;
+	XMMATRIX m_Projection;
 };
 
 struct SimpleVertex
 {
 	XMFLOAT3 Pos;
+	XMFLOAT4 Color;
 };
 
 DirectXApp::DirectXApp()
@@ -58,10 +61,16 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	if (FAILED(compileAndEnableShaders()))
 		return false;
 
+	if (FAILED(setupVertexAndIndexBuffer()))
+		return false;
+
+	if (FAILED(setupConstantBuffer()))
+		return false;
+
     return true;
 }
 
-HRESULT DirectXApp::setupMatrices()
+HRESULT DirectXApp::setupConstantBuffer()
 {
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -80,8 +89,83 @@ HRESULT DirectXApp::setupMatrices()
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(eye, at, up);
 
+	//XM_PIDIV2 is pi / 2 aka 90 degrees field of view
+	//0.01f is near clipping plane, 
+	//100.0f is far clipping plane.
 	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_width / (FLOAT)m_height, 0.01f, 100.0f);
 
+	return S_OK;
+}
+
+HRESULT DirectXApp::setupVertexAndIndexBuffer()
+{
+	SimpleVertex vertices[] =
+	{
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
+	};
+
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * 8;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	ZeroMemory(&initData, sizeof(initData));
+	initData.pSysMem = vertices;
+	HRESULT hr = g_d3dDevice->CreateBuffer(&bd, &initData, &g_VertexBuffer);
+
+	if (FAILED(hr))
+		return hr;
+
+
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	g_ImmediateContext->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
+
+	// Create index buffer
+	WORD indices[] =
+	{
+		3, 1, 0,
+		2, 1, 3,
+
+		0, 5, 4,
+		1, 5, 0,
+
+		3, 4, 7,
+		0, 4, 3,
+
+		1, 6, 5,
+		2, 6, 1,
+
+		2, 7, 6,
+		3, 7, 2,
+
+		6, 4, 5,
+		7, 4, 6,
+	};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices needed for 12 triangles in a triangle list
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	initData.pSysMem = indices;
+	hr = g_d3dDevice->CreateBuffer(&bd, &initData, &g_IndexBuffer);
+	if (FAILED(hr))
+		return hr;
+
+	// Set index buffer
+	g_ImmediateContext->IASetIndexBuffer(g_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return S_OK;
 }
@@ -143,38 +227,6 @@ HRESULT DirectXApp::compileAndEnableShaders()
 
 	if (FAILED(hr))
 		return hr;
-
-	//Vertex buffer
-	SimpleVertex vertices[] =
-	{
-		XMFLOAT3(0.0f, 0.5f, 0.5f),
-		XMFLOAT3(0.5f, -0.5f, 0.5f),
-		XMFLOAT3(-0.5f, -0.5f, 0.5f)
-	};
-
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 3;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA initData;
-	ZeroMemory(&initData, sizeof(initData));
-	initData.pSysMem = vertices;
-	hr = g_d3dDevice->CreateBuffer(&bd, &initData, &g_VertexBuffer);
-
-	if (FAILED(hr))
-		return hr;
-
-
-	UINT stride = sizeof(SimpleVertex);
-	UINT offset = 0;
-	g_ImmediateContext->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
-
-
-	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return S_OK;
 }
@@ -306,15 +358,24 @@ bool DirectXApp::Run()
 void DirectXApp::render()
 {
 
+
 	//Background color
     float clearColor[4] = { 0.0f, 0.125f, 0.2f, 1.0f };
 
 	//Draw background color
     g_ImmediateContext->ClearRenderTargetView(g_RenderTargetView, clearColor);
 
+
+	ConstantBuffer cb;
+	cb.m_World = XMMatrixTranspose(g_World);
+	cb.m_View = XMMatrixTranspose(g_View);
+	cb.m_Projection = XMMatrixTranspose(g_Projection);
+	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
+
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
+	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
-	g_ImmediateContext->Draw(3, 0);
+	g_ImmediateContext->DrawIndexed(36, 0, 0);
 
 	//Switch back buffer and front buffer to show what we've drawn. 
 	//ie. present it.

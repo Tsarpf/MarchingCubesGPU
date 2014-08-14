@@ -24,7 +24,8 @@ private:
     void render();
 	HRESULT compileAndEnableShaders();
 	HRESULT compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob);
-	HRESULT setupMatrices();
+	HRESULT setupConstantBuffer();
+	HRESULT setupVertexAndIndexBuffer();
 
 	//Window and viewport size
 	UINT m_width = 640;

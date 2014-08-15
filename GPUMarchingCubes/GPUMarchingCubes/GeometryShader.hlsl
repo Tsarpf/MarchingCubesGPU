@@ -1,8 +1,22 @@
-struct GSOutput
+struct VS_OUTPUT
 {
-	float4 pos : SV_POSITION;
+	float4 Pos : SV_POSITION;
+	float4 Color : COLOR0;
 };
 
+[maxvertexcount(1)]
+void main(triangle VS_OUTPUT input[3], inout TriangleStream<VS_OUTPUT> triStream)
+{
+	//VS_OUTPUT v;
+	//v = input[0];
+	//v.Pos.x += 1;
+	//triStream.Append(v);
+	triStream.Append(input[0]);
+	triStream.Append(input[1]);
+	triStream.Append(input[2]);
+}
+
+/*
 [maxvertexcount(3)]
 void main(
 	triangle float4 input[3] : SV_POSITION, 
@@ -16,3 +30,4 @@ void main(
 		output.Append(element);
 	}
 }
+*/

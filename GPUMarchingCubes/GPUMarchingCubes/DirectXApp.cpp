@@ -14,6 +14,7 @@ ID3D11RenderTargetView* g_RenderTargetView = NULL;
 
 ID3D11VertexShader* g_VertexShader = NULL;
 ID3D11PixelShader* g_PixelShader = NULL;
+ID3D11GeometryShader* g_GeometryShader = NULL;
 
 ID3D11InputLayout* g_VertexLayout = NULL;
 
@@ -69,7 +70,7 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	if (FAILED(compileAndEnableShaders()))
 		return false;
 
-	if (FAILED(setupVertexAndIndexBuffer()))
+	if (FAILED(setupVertexAndIndexAndSOBuffer()))
 		return false;
 
 	if (FAILED(setupConstantBuffer()))
@@ -140,7 +141,7 @@ HRESULT DirectXApp::setupConstantBuffer()
 	return S_OK;
 }
 
-HRESULT DirectXApp::setupVertexAndIndexBuffer()
+HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 {
 	SimpleVertex vertices[] =
 	{
@@ -197,7 +198,7 @@ HRESULT DirectXApp::setupVertexAndIndexBuffer()
 		7, 4, 6,
 	};
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices needed for 12 triangles in a triangle list
+	bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices (indices) needed for 12 triangles in a triangle list
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	initData.pSysMem = indices;
@@ -209,6 +210,27 @@ HRESULT DirectXApp::setupVertexAndIndexBuffer()
 	g_ImmediateContext->IASetIndexBuffer(g_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+	//Create SO stage buffer
+	ID3D11Buffer* soBuffer;
+	int soBufferSize = 1000000;
+	D3D11_BUFFER_DESC soBufferDesc =
+	{
+		soBufferSize,
+		D3D11_USAGE_DEFAULT,
+		D3D11_BIND_STREAM_OUTPUT,
+		0,
+		0,
+		0
+	};
+	g_d3dDevice->CreateBuffer(&soBufferDesc, NULL, &soBuffer);
+	//put the SO buffer to use
+	UINT soffset[1] = { 0 };
+	//UINT* offset = 
+	g_ImmediateContext->SOSetTargets(1, &soBuffer, soffset);
+	
+	//g_d3dDevice->SO
 
 	return S_OK;
 }
@@ -236,34 +258,54 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		return hr;
 	}
 
+	//Create input layout
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	//unsigned int numElements 
+	};	
 	UINT numElements = ARRAYSIZE(layout);
-
 	hr = g_d3dDevice->CreateInputLayout(layout, numElements, vsBlob->GetBufferPointer(),
 										vsBlob->GetBufferSize(), &g_VertexLayout);
-
 	vsBlob->Release();
-
 	if (FAILED(hr))
 		return hr;
-
-	//set input layout
+	//set input layout to use
 	g_ImmediateContext->IASetInputLayout(g_VertexLayout);
 
 
-	ID3DBlob* psBlob = NULL;
+	//compile geometry shader
+	ID3DBlob* gsBlob = NULL;
+	hr = compileShaderFromFile(L"GeometryShader.hlsl", "main", "gs_4_0", &gsBlob);
+	//stream output stage input signature declaration
+	D3D11_SO_DECLARATION_ENTRY decl[] =
+	{
+		{ 0, "SV_POSITION", 0, 0, 4, 0 },
+		{ 0, "COLOR0", 0, 0, 4, 0 },
+	};
 
-	hr = compileShaderFromFile(L"PixelShader.hlsl", "main", "ps_4_0", &psBlob);
+	hr = g_d3dDevice->CreateGeometryShaderWithStreamOutput
+	(
+		gsBlob->GetBufferPointer(),
+		gsBlob->GetBufferSize(),
+		decl,
+		sizeof(decl),
+		NULL, 0, NULL, NULL,
+		&g_GeometryShader
+	);
 
+	gsBlob->Release();
 	if (FAILED(hr))
 		return hr;
 
+	//ID3D11Buffer
+
+
+	//compile and create pixel shader
+	ID3DBlob* psBlob = NULL;
+	hr = compileShaderFromFile(L"PixelShader.hlsl", "main", "ps_4_0", &psBlob);
+	if (FAILED(hr))
+		return hr;
 	hr = g_d3dDevice->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &g_PixelShader);
 	psBlob->Release();
 
@@ -422,6 +464,7 @@ void DirectXApp::render()
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
+	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
 	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
 

@@ -4,7 +4,7 @@ struct VS_OUTPUT
 	float4 Color : COLOR0;
 };
 
-[maxvertexcount(1)]
+[maxvertexcount(3)]
 void main(triangle VS_OUTPUT input[3], inout TriangleStream<VS_OUTPUT> triStream)
 {
 	//VS_OUTPUT v;

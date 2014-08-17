@@ -1,21 +1,14 @@
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>    // include the basic windows header file
-#include "DirectXApp.h"
+#define WIN32_LEAN_AND_MEAN //This define strips out a lot of unneeded stuff
+#include <Windows.h>    //Basic windows header file
+#include "DirectXApp.h" //Our dx app
 
 
-//int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-//{
-//    MessageBox(NULL, L"Hello World!", L"Testing one two three!", MB_ICONEXCLAMATION | MB_OK);
-//    return 0;
-//}
 
+//Application entry point
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-
     DirectXApp dxapp;
     
     if(dxapp.Init(hInstance, hPrevInstance, lpCmdLine, nCmdShow))
         dxapp.Run();
-    
-    //return (int)msg.
 }

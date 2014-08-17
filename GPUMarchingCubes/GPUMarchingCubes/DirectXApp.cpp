@@ -1,10 +1,15 @@
 #include "DirectXApp.h"
 
-//HINSTANCE g_hInst = NULL;
-//HWND g_hWnd = NULL;
+//Certain windows unique identifier
 HINSTANCE g_hInst = NULL;
+
+//Handle to a window
 HWND g_hWnd = NULL;
 
+
+/*
+Globals. These will probably be transferred to private parts of the dx app class
+*/
 D3D_DRIVER_TYPE g_DriverType = D3D_DRIVER_TYPE_NULL;
 
 IDXGISwapChain* g_SwapChain = NULL;
@@ -27,11 +32,15 @@ ID3D11DepthStencilView* g_DepthStencilView = NULL;
 
 
 
+//Matrices used for 3D transformations
 XMMATRIX g_World;
 XMMATRIX g_View;
 XMMATRIX g_Projection;
 
 
+/*
+Constant buffer description
+*/
 struct ConstantBuffer
 {
 	XMMATRIX m_World;
@@ -39,27 +48,36 @@ struct ConstantBuffer
 	XMMATRIX m_Projection;
 };
 
+/*
+Vertex description
+*/
 struct SimpleVertex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT4 Color;
 };
 
+/*
+Constructor
+*/
 DirectXApp::DirectXApp()
 {
 }
 
-
+/*
+Destructor
+*/
 DirectXApp::~DirectXApp()
 {
 }
 
+/*
+Tries to initialize the whole DirectX app to the point where it's ready to start the rendering loop
+*/
 bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
   	if(FAILED(createWindow(hInstance, nCmdShow)))
 		return false;
-
-
 
     if (FAILED(initDX()))
         return false;
@@ -80,6 +98,9 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     return true;
 }
 
+/*
+Initializes a depth stencil that is needed to render objects that overlap each other correctly
+*/
 HRESULT DirectXApp::createDepthStencil()
 {
 	// Create depth stencil texture
@@ -115,6 +136,9 @@ HRESULT DirectXApp::createDepthStencil()
 		return hr;
 }
 
+/*
+Set up the constant buffer that is used to transfer data from cpu to gpu once per frame (render).
+*/
 HRESULT DirectXApp::setupConstantBuffer()
 {
 	D3D11_BUFFER_DESC bd;
@@ -142,6 +166,10 @@ HRESULT DirectXApp::setupConstantBuffer()
 	return S_OK;
 }
 
+
+/*
+Setup vertex, index and stream output buffers
+*/
 HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 {
 	SimpleVertex vertices[] =
@@ -235,6 +263,9 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 	return S_OK;
 }
 
+/*
+Compile shaders and describe how they talk to each other and the CPU. 
+*/
 HRESULT DirectXApp::compileAndEnableShaders()
 {
 	HRESULT hr = S_OK;
@@ -298,38 +329,12 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		NULL,
 		&g_GeometryShader
 	);
-	//ID3D11Debug* g_d3dDebug;
-	//g_d3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&g_d3dDebug));
-	//g_d3dDebug->ReportLiveDeviceObjects();
-	/*
-	if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
-		hr = HRESULT_CODE(hr);
-	TCHAR* szErrMsg;
-
-	if (FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&szErrMsg, 0, NULL) != 0)
-	{
-		OutputDebugString(szErrMsg);
-		LocalFree(szErrMsg);
-	}
-	else
-		OutputDebugString(L"Could not find a description for error #" + hr); //+ hr);
-	*/
-
-	//DWORD derp = GetLastError();
-	
 
 	gsBlob->Release();
 	if (FAILED(hr))
 	{
-		//System.Diagnostics.Debug.WriteLine();
 		return hr;
 	}
-
-	//ID3D11Buffer
-
 
 	//compile and create pixel shader
 	ID3DBlob* psBlob = NULL;
@@ -346,6 +351,9 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	return S_OK;
 }
 
+/*
+Compiles targeted text file as the specified shader type.
+*/
 HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob)
 {
 	HRESULT hr = S_OK;
@@ -386,6 +394,9 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 
 }
 
+/*
+Creates the d3d device and initializes swapchain. Creates the backbuffer. Creates a viewport where we'll draw stuff.
+*/
 bool DirectXApp::initDX()
 {
 	//Only allow directx 11
@@ -416,6 +427,7 @@ bool DirectXApp::initDX()
 	g_DriverType = D3D_DRIVER_TYPE_HARDWARE;
 
 
+	//Enable debugging of d3d11 stuff
 	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
@@ -427,10 +439,11 @@ bool DirectXApp::initDX()
 
     ID3D11Texture2D* backBuffer = NULL;
 
-    //this saves the position of swap chain back buffer to backBuffer
+    //this saves the position of swap chain's back buffer to backBuffer
     hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
     if (FAILED(hr))
         return hr;
+
 
     hr = g_d3dDevice->CreateRenderTargetView(backBuffer, NULL, &g_RenderTargetView);
     //release memory and close threads used by COM object. Only closes texture object, doesn't destroy the actual back buffer
@@ -438,13 +451,11 @@ bool DirectXApp::initDX()
     if (FAILED(hr))
         return hr;
 
-	//moved to createDepthStencil
-    //g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
 
+	//Create the viewport
     D3D11_VIEWPORT vp;
     vp.Width = (float)m_width;
-    vp.Height= (float)m_height;
-
+    vp.Height = (float)m_height;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0;
@@ -455,6 +466,9 @@ bool DirectXApp::initDX()
     return S_OK;
 }
 
+/*
+Starts running the window message loop which handles messages to the window and when there's no messages renders.
+*/
 bool DirectXApp::Run()
 {
     MSG msg = { 0 };
@@ -474,7 +488,7 @@ bool DirectXApp::Run()
     return true;
 }
 
-/* Renders a frame */
+/* Renders a frame,  */
 void DirectXApp::render()
 {
 
@@ -491,13 +505,14 @@ void DirectXApp::render()
 
 	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	//Constant buffer is what we'll transfer to the user
+	//Constant buffer is what we'll transfer from the cpu side to the gpu (eg. for the shader code to use)
 	ConstantBuffer cb;
 	cb.m_World = XMMatrixTranspose(g_World);
 	cb.m_View = XMMatrixTranspose(g_View);
 	cb.m_Projection = XMMatrixTranspose(g_Projection);
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 
+	//Put the shaders to use
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
 	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
 	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer);

@@ -67,11 +67,12 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	if (FAILED(createDepthStencil()))
 		return false;
 
+	if (FAILED(setupVertexAndIndexAndSOBuffer()))
+		return false;
+
 	if (FAILED(compileAndEnableShaders()))
 		return false;
 
-	if (FAILED(setupVertexAndIndexAndSOBuffer()))
-		return false;
 
 	if (FAILED(setupConstantBuffer()))
 		return false;
@@ -209,7 +210,6 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 	// Set index buffer
 	g_ImmediateContext->IASetIndexBuffer(g_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
 	//Create SO stage buffer
@@ -281,22 +281,52 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	D3D11_SO_DECLARATION_ENTRY decl[] =
 	{
 		{ 0, "SV_POSITION", 0, 0, 4, 0 },
-		{ 0, "COLOR0", 0, 0, 4, 0 },
+		{ 0, "COLOR", 0, 0, 4, 0 },
 	};
 
+	UINT stream = (UINT)0;
 	hr = g_d3dDevice->CreateGeometryShaderWithStreamOutput
 	(
 		gsBlob->GetBufferPointer(),
 		gsBlob->GetBufferSize(),
 		decl,
-		sizeof(decl),
-		NULL, 0, NULL, NULL,
+		(UINT)2,
+		//sizeof(decl),
+		NULL,
+		0,
+		stream,
+		NULL,
 		&g_GeometryShader
 	);
+	//ID3D11Debug* g_d3dDebug;
+	//g_d3dDevice->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&g_d3dDebug));
+	//g_d3dDebug->ReportLiveDeviceObjects();
+	/*
+	if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
+		hr = HRESULT_CODE(hr);
+	TCHAR* szErrMsg;
+
+	if (FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&szErrMsg, 0, NULL) != 0)
+	{
+		OutputDebugString(szErrMsg);
+		LocalFree(szErrMsg);
+	}
+	else
+		OutputDebugString(L"Could not find a description for error #" + hr); //+ hr);
+	*/
+
+	//DWORD derp = GetLastError();
+	
 
 	gsBlob->Release();
 	if (FAILED(hr))
+	{
+		//System.Diagnostics.Debug.WriteLine();
 		return hr;
+	}
 
 	//ID3D11Buffer
 
@@ -308,10 +338,10 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		return hr;
 	hr = g_d3dDevice->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &g_PixelShader);
 	psBlob->Release();
-
-
 	if (FAILED(hr))
+	{
 		return hr;
+	}
 
 	return S_OK;
 }
@@ -385,7 +415,11 @@ bool DirectXApp::initDX()
 
 	g_DriverType = D3D_DRIVER_TYPE_HARDWARE;
 
-    HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL, g_DriverType, NULL, 0, featureLevels, featureLevelCount,
+
+	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL, g_DriverType, NULL, creationFlags, featureLevels, featureLevelCount,
         D3D11_SDK_VERSION, &sd, &g_SwapChain, &g_d3dDevice, NULL, &g_ImmediateContext);
 
     if (FAILED(hr))
@@ -455,6 +489,7 @@ void DirectXApp::render()
 	//Reset depth buffer to max depth
 	g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//Constant buffer is what we'll transfer to the user
 	ConstantBuffer cb;

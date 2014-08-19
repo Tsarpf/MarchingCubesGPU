@@ -272,7 +272,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 
 	//Vertex shader
 	ID3DBlob* vsBlob = NULL;
-	hr = compileShaderFromFile(L"VertexShader.hlsl", "main", "vs_4_0", &vsBlob);
+	hr = compileShaderFromFile(L"VertexShader.hlsl", "main", "vs_5_0", &vsBlob);
 
 	if (FAILED(hr))
 	{
@@ -307,7 +307,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 
 	//compile geometry shader
 	ID3DBlob* gsBlob = NULL;
-	hr = compileShaderFromFile(L"GeometryShader.hlsl", "main", "gs_4_0", &gsBlob);
+	hr = compileShaderFromFile(L"GeometryShader.hlsl", "main", "gs_5_0", &gsBlob);
 	//stream output stage input signature declaration
 	D3D11_SO_DECLARATION_ENTRY decl[] =
 	{
@@ -338,7 +338,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 
 	//compile and create pixel shader
 	ID3DBlob* psBlob = NULL;
-	hr = compileShaderFromFile(L"PixelShader.hlsl", "main", "ps_4_0", &psBlob);
+	hr = compileShaderFromFile(L"PixelShader.hlsl", "main", "ps_5_0", &psBlob);
 	if (FAILED(hr))
 		return hr;
 	hr = g_d3dDevice->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &g_PixelShader);
@@ -362,7 +362,7 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 
 #if defined( DEBUG ) || defined( _DEBUG )
 	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
-	// Setting this flag improves the shader debugging experience, but still allows 
+	// Setting this flag improves the shader debug output, but still allows 
 	// the shaders to be optimized and to run exactly the way they will run in 
 	// the release configuration of this program.
 	dwShaderFlags |= D3DCOMPILE_DEBUG;

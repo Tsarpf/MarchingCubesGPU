@@ -10,18 +10,22 @@ class VolumetricData
 public:
 	VolumetricData(int Width, int Height, int Depth);
 	~VolumetricData();
+	void CreateTestData();
+	ID3D11ShaderResourceView* GetShaderResource();
 private:
-	void generateTestData();
+	void createTexture();
+	void createShaderResourceView();
 	void createTextureDesc();
 	void createSubresourceData();
 	void createDataArray();
+	int getIdx(int,int,int);
 
 
-	float* data;
-	ID3D11Texture3D* m_Texture;
+	float* m_data;
+	ID3D11Texture3D* m_texture;
+	ID3D11ShaderResourceView* m_shaderResourceView;
 	UINT m_width, m_height, m_depth;
 	D3D11_TEXTURE3D_DESC m_texDesc;
 	D3D11_SUBRESOURCE_DATA  m_subData;
-
 };
 

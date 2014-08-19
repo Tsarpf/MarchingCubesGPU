@@ -91,7 +91,6 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	if (FAILED(compileAndEnableShaders()))
 		return false;
 
-
 	if (FAILED(setupConstantBuffer()))
 		return false;
 

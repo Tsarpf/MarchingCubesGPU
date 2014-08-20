@@ -29,6 +29,7 @@ private:
 	HRESULT setupConstantBuffer();
 	HRESULT createDepthStencil();
 	HRESULT setupVertexAndIndexAndSOBuffer();
+	HRESULT setupVisualizationData();
 
 	//Window and viewport size
 	UINT m_width = 640;

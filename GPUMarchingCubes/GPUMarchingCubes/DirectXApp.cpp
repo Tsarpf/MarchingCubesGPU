@@ -31,6 +31,10 @@ ID3D11Buffer* g_ConstantBuffer = NULL;
 ID3D11Texture2D* g_DepthStencil = NULL;
 ID3D11DepthStencilView* g_DepthStencilView = NULL;
 
+ID3D11ShaderResourceView* g_DensityData = NULL;
+ID3D11SamplerState* g_SamplerPoint = NULL;
+
+
 
 
 //Matrices used for 3D transformations
@@ -77,7 +81,7 @@ Tries to initialize the whole DirectX app to the point where it's ready to start
 */
 bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-  	if(FAILED(createWindow(hInstance, nCmdShow)))
+  	if (FAILED(createWindow(hInstance, nCmdShow)))
 		return false;
 
     if (FAILED(initDX()))
@@ -95,10 +99,28 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 	if (FAILED(setupConstantBuffer()))
 		return false;
 
-	VolumetricData* vdata = new VolumetricData(128,128,128);
-	vdata->CreateTestData();
-
+	if (FAILED(setupVisualizationData()))
+		return false;
+		
     return true;
+}
+
+HRESULT DirectXApp::setupVisualizationData()
+{
+	int height, depth, width;
+	height = depth = width = 128;
+	VolumetricData* vdata = new VolumetricData(width, height, depth);
+	HRESULT  hr;
+	if (FAILED(hr = vdata->CreateTestData()))
+	{
+		delete vdata;
+		return hr;
+	}
+
+	g_DensityData = vdata->GetShaderResource();
+	delete vdata;
+
+	return S_OK;
 }
 
 /*
@@ -350,6 +372,23 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	{
 		return hr;
 	}
+
+
+	//Create a basic point sampler for sampling our density data in the gpu
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = 0;
+	hr = g_d3dDevice->CreateSamplerState(&sampDesc, &g_SamplerPoint);
+	if (FAILED(hr))
+		return hr;
+
+
 
 	return S_OK;
 }

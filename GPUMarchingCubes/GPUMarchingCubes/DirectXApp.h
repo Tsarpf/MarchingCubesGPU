@@ -7,6 +7,8 @@
 #include <xnamath.h>
 #include <d3dcompiler.h>
 
+#include "VolumetricData.h"
+
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 

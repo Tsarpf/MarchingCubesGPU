@@ -14,23 +14,29 @@ ID3D11ShaderResourceView* VolumetricData::GetShaderResource()
 	return m_shaderResourceView;
 }
 
-void VolumetricData::CreateTestData()
+HRESULT VolumetricData::CreateTestData()
 {
 	createDataArray();
 	createTextureDesc();
 	createSubresourceData();
-	createTexture();
-	createShaderResourceView();
+	HRESULT hr;
+	if (FAILED(hr = createTexture()))
+		return hr;
+
+	if (FAILED(hr = createShaderResourceView()))
+		return hr;
+	
+	return S_OK;
 }
 
-void VolumetricData::createTexture()
+HRESULT VolumetricData::createTexture()
 {
-	g_d3dDevice->CreateTexture3D(&m_texDesc, &m_subData, &m_texture);
+	return g_d3dDevice->CreateTexture3D(&m_texDesc, &m_subData, &m_texture);
 }
 
-void VolumetricData::createShaderResourceView()
+HRESULT VolumetricData::createShaderResourceView()
 {
-	g_d3dDevice->CreateShaderResourceView(m_texture, NULL, &m_shaderResourceView);
+	return g_d3dDevice->CreateShaderResourceView(m_texture, NULL, &m_shaderResourceView);
 }
 
 void VolumetricData::createTextureDesc()
@@ -49,13 +55,9 @@ void VolumetricData::createTextureDesc()
 void VolumetricData::createSubresourceData()
 {
 	ZeroMemory(&m_subData, sizeof(m_subData));
-	//m_subData.pSysMem
 	m_subData.SysMemPitch = m_width * sizeof(float);
 	m_subData.SysMemSlicePitch = m_width * m_height * sizeof(float);
 	m_subData.pSysMem = m_data;
-	//D3D11_SUBRESOURCE_DATA initData;
-	//ZeroMemory(&initData, sizeof(initData));
-	//initData.pSysMem = vertices;
 }
 
 void VolumetricData::createDataArray()
@@ -67,8 +69,7 @@ void VolumetricData::createDataArray()
 		{
 			for (int x = 0; x < m_width; x++)
 			{
-				int idx = getIdx(x, y, z);
-				m_data[idx] = y / m_height * 2 - 1;
+				m_data[getIdx(x, y, z)] = y / m_height * 2 - 1;
 			}
 		}
 	}

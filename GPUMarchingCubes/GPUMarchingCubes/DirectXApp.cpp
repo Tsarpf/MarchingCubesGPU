@@ -1,5 +1,6 @@
 #include "DirectXApp.h"
 
+
 //Certain windows unique identifier
 HINSTANCE g_hInst = NULL;
 
@@ -93,6 +94,9 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
 	if (FAILED(setupConstantBuffer()))
 		return false;
+
+	VolumetricData* vdata = new VolumetricData(128,128,128);
+	vdata->CreateTestData();
 
     return true;
 }

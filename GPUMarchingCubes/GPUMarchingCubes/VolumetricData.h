@@ -10,11 +10,15 @@ class VolumetricData
 public:
 	VolumetricData(int Width, int Height, int Depth);
 	~VolumetricData();
-	void CreateTestData();
+
+	HRESULT CreateTestData();
 	ID3D11ShaderResourceView* GetShaderResource();
 private:
-	void createTexture();
-	void createShaderResourceView();
+	//Disable copy construction
+	VolumetricData(const VolumetricData&);
+
+	HRESULT createTexture();
+	HRESULT createShaderResourceView();
 	void createTextureDesc();
 	void createSubresourceData();
 	void createDataArray();

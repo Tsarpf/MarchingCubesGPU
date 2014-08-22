@@ -11,7 +11,7 @@
 
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
+//class VolumetricData;
 
 class DirectXApp
 {
@@ -31,7 +31,29 @@ private:
 	HRESULT setupVertexAndIndexAndSOBuffer();
 	HRESULT setupVisualizationData();
 
+	VolumetricData* m_volumetricData;
+
 	//Window and viewport size
 	UINT m_width = 640;
 	UINT m_height = 480;
 };
+
+/*
+Constant buffer description
+*/
+struct ConstantBuffer
+{
+	XMMATRIX m_World;
+	XMMATRIX m_View;
+	XMMATRIX m_Projection;
+};
+
+/*
+Vertex description
+*/
+struct SimpleVertex
+{
+	XMFLOAT3 Pos;
+	XMFLOAT4 Color;
+};
+

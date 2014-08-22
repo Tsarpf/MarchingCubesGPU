@@ -1,8 +1,10 @@
 #include "VolumetricData.h"
 
 
-VolumetricData::VolumetricData(int Height, int Width, int Depth) : m_height(Height), m_width(Width), m_depth(Depth)
+VolumetricData::VolumetricData(int Height, int Width, int Depth, XMFLOAT3 CubeSize, XMFLOAT3 CubeStep) : 
+m_height(Height), m_width(Width), m_depth(Depth), m_cubeSize(CubeSize), m_cubeStep(CubeStep)
 {
+		
 }
 VolumetricData::~VolumetricData()
 {
@@ -27,6 +29,19 @@ HRESULT VolumetricData::CreateTestData()
 		return hr;
 	
 	return S_OK;
+}
+
+void VolumetricData::GetDecals(DecalBuffer& buffer)
+{
+	ZeroMemory(&buffer, sizeof(DecalBuffer));
+	buffer.decal0 = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	buffer.decal1 = XMFLOAT3(m_cubeStep.x, 0.0f, 0.0f);
+	buffer.decal2 = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, 0.0f);
+	buffer.decal3 = XMFLOAT3(0.0f, m_cubeStep.y, 0.0f);
+	buffer.decal4 = XMFLOAT3(0.0f, 0.0f, m_cubeStep.z);
+	buffer.decal5 = XMFLOAT3(m_cubeStep.x, 0.0f, m_cubeStep.z);
+	buffer.decal6 = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, m_cubeStep.z);
+	buffer.decal7 = XMFLOAT3(0.0f, m_cubeStep.y, m_cubeStep.z);
 }
 
 HRESULT VolumetricData::createTexture()

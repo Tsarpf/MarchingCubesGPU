@@ -27,6 +27,7 @@ ID3D11InputLayout* g_VertexLayout = NULL;
 ID3D11Buffer* g_VertexBuffer = NULL;
 ID3D11Buffer* g_IndexBuffer = NULL;
 ID3D11Buffer* g_ConstantBuffer = NULL;
+ID3D11Buffer* g_DecalBuffer = NULL;
 
 ID3D11Texture2D* g_DepthStencil = NULL;
 ID3D11DepthStencilView* g_DepthStencilView = NULL;
@@ -44,25 +45,6 @@ XMMATRIX g_Projection;
 
 
 /*
-Constant buffer description
-*/
-struct ConstantBuffer
-{
-	XMMATRIX m_World;
-	XMMATRIX m_View;
-	XMMATRIX m_Projection;
-};
-
-/*
-Vertex description
-*/
-struct SimpleVertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-};
-
-/*
 Constructor
 */
 DirectXApp::DirectXApp()
@@ -74,6 +56,9 @@ Destructor
 */
 DirectXApp::~DirectXApp()
 {
+	//TODO: either clean up all directx stuff here or create a distinct cleanup method.
+	//Latter is probably the better idea because destructor isn't always called when something really weird happens
+	delete m_volumetricData;
 }
 
 /*
@@ -109,22 +94,29 @@ HRESULT DirectXApp::setupVisualizationData()
 {
 	int height, depth, width;
 	height = depth = width = 128;
-	VolumetricData* vdata = new VolumetricData(width, height, depth);
+
+	XMFLOAT3 cubeSize(32, 32, 32);
+	XMFLOAT3 cubeStep(2.0f / cubeSize.x, 2.0f / cubeSize.y, 2.0f / cubeSize.z);
+
+	m_volumetricData = new VolumetricData(width, height, depth, cubeSize, cubeStep);
 	HRESULT  hr;
-	if (FAILED(hr = vdata->CreateTestData()))
+	if (FAILED(hr = m_volumetricData->CreateTestData()))
 	{
-		delete vdata;
+		delete m_volumetricData;
 		return hr;
 	}
 
-	g_DensityData = vdata->GetShaderResource();
-	delete vdata;
+	g_DensityData = m_volumetricData->GetShaderResource();
+
+	DecalBuffer dbuffer;
+	m_volumetricData->GetDecals(dbuffer);
+	g_ImmediateContext->UpdateSubresource(g_DecalBuffer, 0, NULL, &dbuffer, 0, 0);
 
 	return S_OK;
 }
 
 /*
-Initializes a depth stencil that is needed to render objects that overlap each other correctly
+Initializes a depth stencil that is needed to render overlapping objects correctly. 
 */
 HRESULT DirectXApp::createDepthStencil()
 {
@@ -178,8 +170,11 @@ HRESULT DirectXApp::setupConstantBuffer()
 
 	g_World = XMMatrixIdentity();
 
+	//Eye position
 	XMVECTOR eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
+	//Where to look at
 	XMVECTOR at = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	//Up direction
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(eye, at, up);
 
@@ -188,15 +183,26 @@ HRESULT DirectXApp::setupConstantBuffer()
 	//100.0f is far clipping plane.
 	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_width / (FLOAT)m_height, 0.01f, 100.0f);
 
+	//Create decal buffer
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(DecalBuffer);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	hr = g_d3dDevice->CreateBuffer(&bd, NULL, &g_DecalBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	return S_OK;
 }
-
 
 /*
 Setup vertex, index and stream output buffers
 */
 HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 {
+	//All vertices we'll output from cpu to gpu for now
 	SimpleVertex vertices[] =
 	{
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
@@ -209,14 +215,18 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
 	};
 
+	//Vertex buffer description
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
-
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(SimpleVertex) * 8;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+	//This buffer will be optimized to gpu space where cpu doesn't have access
 	bd.CPUAccessFlags = 0;
 
+
+	//Vertex buffer initial data.
 	D3D11_SUBRESOURCE_DATA initData;
 	ZeroMemory(&initData, sizeof(initData));
 	initData.pSysMem = vertices;
@@ -347,7 +357,6 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		gsBlob->GetBufferSize(),
 		decl,
 		(UINT)2,
-		//sizeof(decl),
 		NULL,
 		0,
 		stream,
@@ -375,6 +384,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 
 
 	//Create a basic point sampler for sampling our density data in the gpu
+	//should refactor this elsewhere
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -387,8 +397,6 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	hr = g_d3dDevice->CreateSamplerState(&sampDesc, &g_SamplerPoint);
 	if (FAILED(hr))
 		return hr;
-
-
 
 	return S_OK;
 }
@@ -533,8 +541,6 @@ bool DirectXApp::Run()
 /* Renders a frame,  */
 void DirectXApp::render()
 {
-
-
 	//Background color
     float clearColor[4] = { 0.0f, 0.125f, 0.2f, 1.0f };
 

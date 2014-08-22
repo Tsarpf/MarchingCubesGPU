@@ -20,6 +20,18 @@ struct DecalBuffer
 	XMFLOAT3 decal7;
 };
 
+
+/*
+Vertex description
+*/
+struct SimpleVertex
+{
+	XMFLOAT3 Pos;
+	XMFLOAT4 Color;
+};
+
+
+
 class VolumetricData
 {
 public:
@@ -29,6 +41,8 @@ public:
 	HRESULT CreateTestData();
 	ID3D11ShaderResourceView* GetShaderResource();
 	void GetDecals(DecalBuffer&);
+	int GetVertices(SimpleVertex** outVertices);
+	int GetVertexCount();
 	
 private:
 	//Copy construction disabled by making the copy constructor private.
@@ -42,6 +56,7 @@ private:
 	int getIdx(int,int,int);
 
 
+	int m_vertexCount;
 	XMFLOAT3 m_cubeSize;
 	XMFLOAT3 m_cubeStep;
 	float* m_data;

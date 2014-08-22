@@ -37,7 +37,6 @@ ID3D11SamplerState* g_SamplerPoint = NULL;
 
 
 
-
 //Matrices used for 3D transformations
 XMMATRIX g_World;
 XMMATRIX g_View;
@@ -72,6 +71,9 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (FAILED(initDX()))
         return false;
 
+	if (FAILED(setupVisualizationData()))
+		return false;
+
 	if (FAILED(createDepthStencil()))
 		return false;
 
@@ -83,9 +85,6 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
 	if (FAILED(setupConstantBuffer()))
 		return false;
-
-	if (FAILED(setupVisualizationData()))
-		return false;
 		
     return true;
 }
@@ -95,7 +94,8 @@ HRESULT DirectXApp::setupVisualizationData()
 	int height, depth, width;
 	height = depth = width = 128;
 
-	XMFLOAT3 cubeSize(32, 32, 32);
+	XMFLOAT3 cubeSize(32.0f, 32.0f, 32.0f);
+	//2.0f to decrease density
 	XMFLOAT3 cubeStep(2.0f / cubeSize.x, 2.0f / cubeSize.y, 2.0f / cubeSize.z);
 
 	m_volumetricData = new VolumetricData(width, height, depth, cubeSize, cubeStep);
@@ -107,6 +107,20 @@ HRESULT DirectXApp::setupVisualizationData()
 	}
 
 	g_DensityData = m_volumetricData->GetShaderResource();
+
+	//Create decal buffer
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(DecalBuffer);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	hr = g_d3dDevice->CreateBuffer(&bd, NULL, &g_DecalBuffer);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+	return S_OK;
 
 	DecalBuffer dbuffer;
 	m_volumetricData->GetDecals(dbuffer);
@@ -182,19 +196,6 @@ HRESULT DirectXApp::setupConstantBuffer()
 	//0.01f is near clipping plane, 
 	//100.0f is far clipping plane.
 	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_width / (FLOAT)m_height, 0.01f, 100.0f);
-
-	//Create decal buffer
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(DecalBuffer);
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.CPUAccessFlags = 0;
-	hr = g_d3dDevice->CreateBuffer(&bd, NULL, &g_DecalBuffer);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-	return S_OK;
 }
 
 /*
@@ -203,30 +204,33 @@ Setup vertex, index and stream output buffers
 HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 {
 	//All vertices we'll output from cpu to gpu for now
-	SimpleVertex vertices[] =
-	{
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
-	};
+	//SimpleVertex vertices[] =
+	//{
+	//	{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
+	//	{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+	//	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
+	//	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+	//	{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
+	//	{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
+	//	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
+	//	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
+	//};
+
+	SimpleVertex* vertices = NULL;
+	int vertexCount = m_volumetricData->GetVertices(&vertices);
 
 	//Vertex buffer description
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 8;
+	//bd.ByteWidth = sizeof(SimpleVertex) * 8;
+	bd.ByteWidth = sizeof(SimpleVertex) * vertexCount;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 	//This buffer will be optimized to gpu space where cpu doesn't have access
 	bd.CPUAccessFlags = 0;
 
-
-	//Vertex buffer initial data.
+	//Vertex buffer initial data description.
 	D3D11_SUBRESOURCE_DATA initData;
 	ZeroMemory(&initData, sizeof(initData));
 	initData.pSysMem = vertices;
@@ -240,6 +244,7 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 	UINT offset = 0;
 	g_ImmediateContext->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
+	/*
 	// Create index buffer
 	WORD indices[] =
 	{
@@ -273,6 +278,7 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 	// Set index buffer
 	g_ImmediateContext->IASetIndexBuffer(g_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
+	*/
 
 
 	//Create SO stage buffer
@@ -551,7 +557,7 @@ void DirectXApp::render()
 	//Reset depth buffer to max depth
 	g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	g_ImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 	//Constant buffer is what we'll transfer from the cpu side to the gpu (eg. for the shader code to use)
 	ConstantBuffer cb;
@@ -567,7 +573,10 @@ void DirectXApp::render()
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
 
 	//Draws the 36 indices currently bound to the device
-	g_ImmediateContext->DrawIndexed(36, 0, 0);
+	//g_ImmediateContext->DrawIndexed(36, 0, 0);
+
+
+	g_ImmediateContext->Draw(m_volumetricData->GetVertexCount(), 0);
 
 	//Switch back buffer and front buffer to show what we've drawn. 
 	//ie. present it.

@@ -47,13 +47,3 @@ struct ConstantBuffer
 	XMMATRIX m_View;
 	XMMATRIX m_Projection;
 };
-
-/*
-Vertex description
-*/
-struct SimpleVertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-};
-

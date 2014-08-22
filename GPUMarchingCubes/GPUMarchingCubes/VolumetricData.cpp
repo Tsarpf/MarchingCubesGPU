@@ -4,7 +4,6 @@
 VolumetricData::VolumetricData(int Height, int Width, int Depth, XMFLOAT3 CubeSize, XMFLOAT3 CubeStep) : 
 m_height(Height), m_width(Width), m_depth(Depth), m_cubeSize(CubeSize), m_cubeStep(CubeStep)
 {
-		
 }
 VolumetricData::~VolumetricData()
 {
@@ -89,6 +88,41 @@ void VolumetricData::createDataArray()
 		}
 	}
 }
+
+int VolumetricData::GetVertexCount()
+{
+	return m_vertexCount;
+}
+
+int VolumetricData::GetVertices(SimpleVertex** outVertices)
+{
+	int size = 2.0f / m_cubeStep.x;
+	size = size * size * size;
+	m_vertexCount = size;
+	
+	*outVertices = new SimpleVertex[size];
+	int idx = 0;
+	for (float z = -1; z < 1.0f; z += m_cubeStep.z)
+	{
+		for (float y = -1; y < 1.0f; y += m_cubeStep.y)
+		{
+			for (float x = -1; x < 1.0f; x += m_cubeStep.x)
+			{
+				//SimpleVertex* vertex = new SimpleVertex;
+				//vertex->Color = XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f);
+
+				(*outVertices)[idx] =
+					{ XMFLOAT3(x, y, z), XMFLOAT4((y + 1.0f) / 4.0f, 0.0f, 0.0f, 1.0f) };
+
+				idx++;
+			}
+		}
+	}
+
+	return size;
+}
+
+
 
 int VolumetricData::getIdx(int x, int y, int z)
 {

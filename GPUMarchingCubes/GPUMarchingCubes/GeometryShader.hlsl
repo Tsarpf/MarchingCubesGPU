@@ -7,16 +7,17 @@ struct VS_OUTPUT
 SamplerState samplerPoint : register(s0);
 
 
-[maxvertexcount(3)]
-void main(triangle VS_OUTPUT input[3], inout TriangleStream<VS_OUTPUT> triStream)
+[maxvertexcount(1)]
+void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
 {
-	VS_OUTPUT v;
-	v = input[0];
-	v.Pos.x += 1;
-	triStream.Append(v);
-	//triStream.Append(input[0]);
-	triStream.Append(input[1]);
-	triStream.Append(input[2]);
+	//VS_OUTPUT v;
+	triStream.Append(input[0]);
+	//v = input[0];
+	////v.Pos.x += 1;
+	//triStream.Append(v);
+	////triStream.Append(input[0]);
+	//triStream.Append(input[1]);
+	//triStream.Append(input[2]);
 }
 
 /*

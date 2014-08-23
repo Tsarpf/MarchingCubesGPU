@@ -5,20 +5,30 @@ struct VS_OUTPUT
 };
 
 SamplerState samplerPoint : register(s0);
+Texture3D densityTex : register(t0);
 
-
-[maxvertexcount(1)]
-void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
+cbuffer cbVertexDecals : register (b1)
 {
-	//VS_OUTPUT v;
-	triStream.Append(input[0]);
-	//v = input[0];
-	////v.Pos.x += 1;
-	//triStream.Append(v);
-	////triStream.Append(input[0]);
-	//triStream.Append(input[1]);
-	//triStream.Append(input[2]);
+	float3 decal[8];
+	//float3 decal1;
+	//float3 decal2;
+	//float3 decal3;
+	//float3 decal4;
+	//float3 decal5;
+	//float3 decal6;
+	//float3 decal7;
 }
+
+//cbuffer GlobalVariables
+//{
+//	float4 Position;
+//};
+
+//[maxvertexcount(1)]
+//void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
+//{
+//	triStream.Append(input[0]);
+//}
 
 /*
 [maxvertexcount(3)]
@@ -35,6 +45,32 @@ void main(
 	}
 }
 */
+
+
+static float4 Position;
+
+[maxvertexcount(12)]
+void main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> triStream)
+{
+	Position = input[0].Pos;
+	triStream.Append(input[0]);
+}
+
+float3 cubePos(int i)
+{
+	return Position.xyz + decal[i];
+}
+
+float cubeVal(int i)
+{
+	return densityTex.SampleLevel(samplerPoint, (cubePos(i) + 1.0f) / 2.0f, 0);
+}
+
+
+
+
+
+
 
 
 

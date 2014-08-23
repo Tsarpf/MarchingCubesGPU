@@ -33,14 +33,14 @@ HRESULT VolumetricData::CreateTestData()
 void VolumetricData::GetDecals(DecalBuffer& buffer)
 {
 	ZeroMemory(&buffer, sizeof(DecalBuffer));
-	buffer.decal0 = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	buffer.decal1 = XMFLOAT3(m_cubeStep.x, 0.0f, 0.0f);
-	buffer.decal2 = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, 0.0f);
-	buffer.decal3 = XMFLOAT3(0.0f, m_cubeStep.y, 0.0f);
-	buffer.decal4 = XMFLOAT3(0.0f, 0.0f, m_cubeStep.z);
-	buffer.decal5 = XMFLOAT3(m_cubeStep.x, 0.0f, m_cubeStep.z);
-	buffer.decal6 = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, m_cubeStep.z);
-	buffer.decal7 = XMFLOAT3(0.0f, m_cubeStep.y, m_cubeStep.z);
+	buffer.decal[0] = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	buffer.decal[1] = XMFLOAT3(m_cubeStep.x, 0.0f, 0.0f);
+	buffer.decal[2] = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, 0.0f);
+	buffer.decal[3] = XMFLOAT3(0.0f, m_cubeStep.y, 0.0f);
+	buffer.decal[4] = XMFLOAT3(0.0f, 0.0f, m_cubeStep.z);
+	buffer.decal[5] = XMFLOAT3(m_cubeStep.x, 0.0f, m_cubeStep.z);
+	buffer.decal[6] = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, m_cubeStep.z);
+	buffer.decal[7] = XMFLOAT3(0.0f, m_cubeStep.y, m_cubeStep.z);
 }
 
 HRESULT VolumetricData::createTexture()
@@ -59,7 +59,8 @@ void VolumetricData::createTextureDesc()
 	m_texDesc.Height = m_height;
 	m_texDesc.Depth = m_depth;
 	m_texDesc.MipLevels = 1;
-	m_texDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	//m_texDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	m_texDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	m_texDesc.Usage = D3D11_USAGE_DEFAULT;
 	m_texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	m_texDesc.CPUAccessFlags = 0;

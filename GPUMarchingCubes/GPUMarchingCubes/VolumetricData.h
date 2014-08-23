@@ -10,14 +10,14 @@ extern ID3D11Device* g_d3dDevice;
 /*vertex decals description*/
 struct DecalBuffer 
 {
-	XMFLOAT3 decal0;
-	XMFLOAT3 decal1;
-	XMFLOAT3 decal2;
-	XMFLOAT3 decal3;
-	XMFLOAT3 decal4;
-	XMFLOAT3 decal5;
-	XMFLOAT3 decal6;
-	XMFLOAT3 decal7;
+	XMFLOAT3 decal[8];
+	//XMFLOAT3 decal1;
+	//XMFLOAT3 decal2;
+	//XMFLOAT3 decal3;
+	//XMFLOAT3 decal4;
+	//XMFLOAT3 decal5;
+	//XMFLOAT3 decal6;
+	//XMFLOAT3 decal7;
 };
 
 

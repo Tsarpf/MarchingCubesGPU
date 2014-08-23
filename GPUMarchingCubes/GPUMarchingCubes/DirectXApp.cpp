@@ -568,9 +568,15 @@ void DirectXApp::render()
 
 	//Put the shaders to use
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
-	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
 	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer);
+
+	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
+	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
+	g_ImmediateContext->GSGetSamplers(0, 1, &g_SamplerPoint);
+	g_ImmediateContext->GSSetShaderResources(0, 1, &g_DensityData);
+
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
+
 
 	//Draws the 36 indices currently bound to the device
 	//g_ImmediateContext->DrawIndexed(36, 0, 0);

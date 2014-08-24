@@ -24,6 +24,9 @@
     <ClCompile Include="VolumetricData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LookUpTables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXApp.h">

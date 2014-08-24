@@ -22,7 +22,7 @@ public:
     bool Run();
 private:
     HRESULT createWindow(HINSTANCE, int);
-    bool initDX();
+    HRESULT initDX();
     void render();
 	HRESULT compileAndEnableShaders();
 	HRESULT compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LPCSTR ShaderModel, ID3DBlob** OutBlob);

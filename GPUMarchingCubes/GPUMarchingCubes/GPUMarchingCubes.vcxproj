@@ -82,6 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DirectXApp.cpp" />
+    <ClCompile Include="LookUpTables.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="VolumetricData.cpp" />
   </ItemGroup>

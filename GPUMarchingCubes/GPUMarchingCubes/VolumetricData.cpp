@@ -15,6 +15,11 @@ ID3D11ShaderResourceView* VolumetricData::GetShaderResource()
 	return m_shaderResourceView;
 }
 
+ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
+{
+	return m_triTableSRV;
+}
+
 HRESULT VolumetricData::CreateTestData()
 {
 	createDataArray();
@@ -41,6 +46,35 @@ void VolumetricData::GetDecals(DecalBuffer& buffer)
 	buffer.decal[5] = XMFLOAT3(m_cubeStep.x, 0.0f, m_cubeStep.z);
 	buffer.decal[6] = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, m_cubeStep.z);
 	buffer.decal[7] = XMFLOAT3(0.0f, m_cubeStep.y, m_cubeStep.z);
+}
+
+HRESULT VolumetricData::CreateTriTableResource()
+{
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
+	desc.Height = 256;
+	desc.Width = 16;
+	desc.MipLevels = 1;
+	desc.Format = DXGI_FORMAT_R32_SINT;
+	desc.SampleDesc = { 1, 0 };
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	ZeroMemory(&initData, sizeof(initData));
+	initData.SysMemPitch = 16 * sizeof(float);
+	initData.SysMemSlicePitch = 16 * 256 * sizeof(float);
+	initData.pSysMem = g_TriTable;
+
+	ID3D11Texture2D* texture;
+	HRESULT hr = g_d3dDevice->CreateTexture2D(&desc, &initData, &texture);
+	if (FAILED(hr))
+		return hr;
+
+	hr = g_d3dDevice->CreateShaderResourceView(texture, NULL, &m_triTableSRV);
+	return hr;
 }
 
 HRESULT VolumetricData::createTexture()

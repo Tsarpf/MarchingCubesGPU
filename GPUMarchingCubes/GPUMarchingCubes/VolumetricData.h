@@ -2,10 +2,13 @@
 
 #include <D3D11.h>
 #include <xnamath.h>
+#include "LookUpTables.cpp"
 //#include "DirectXApp.h"
 //#include <D3DX11.h>
 
 extern ID3D11Device* g_d3dDevice;
+//extern int g_TriTable[256][16];
+extern int g_TriTable[][16];
 
 /*vertex decals description*/
 struct DecalBuffer 
@@ -43,6 +46,8 @@ public:
 	void GetDecals(DecalBuffer&);
 	int GetVertices(SimpleVertex** outVertices);
 	int GetVertexCount();
+	ID3D11ShaderResourceView* GetTriTableShaderResource();
+	HRESULT CreateTriTableResource();
 	
 private:
 	//Copy construction disabled by making the copy constructor private.
@@ -61,7 +66,8 @@ private:
 	XMFLOAT3 m_cubeStep;
 	float* m_data;
 	ID3D11Texture3D* m_texture;
-	ID3D11ShaderResourceView* m_shaderResourceView;
+	ID3D11ShaderResourceView* m_shaderResourceView = NULL;
+	ID3D11ShaderResourceView* m_triTableSRV = NULL;
 	UINT m_width, m_height, m_depth;
 	D3D11_TEXTURE3D_DESC m_texDesc;
 	D3D11_SUBRESOURCE_DATA  m_subData;

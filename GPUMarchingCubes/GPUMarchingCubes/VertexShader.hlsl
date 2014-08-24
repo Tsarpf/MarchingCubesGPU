@@ -21,6 +21,8 @@ VS_OUTPUT main( float4 Pos : POSITION, float4 Color : COLOR)
 	//output.Pos = mul(output.Pos, Projection);
 	//output.Color = Color;
 	//return output;
-
-	return Pos;
+	VS_OUTPUT output = (VS_OUTPUT)0;
+	output.Pos = Pos;
+	output.Color = Color;
+	return output;
 }

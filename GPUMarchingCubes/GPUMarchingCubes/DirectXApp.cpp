@@ -33,6 +33,7 @@ ID3D11Texture2D* g_DepthStencil = NULL;
 ID3D11DepthStencilView* g_DepthStencilView = NULL;
 
 ID3D11ShaderResourceView* g_DensityData = NULL;
+ID3D11ShaderResourceView* g_TriTableSRV = NULL;
 ID3D11SamplerState* g_SamplerPoint = NULL;
 
 
@@ -108,6 +109,14 @@ HRESULT DirectXApp::setupVisualizationData()
 
 	g_DensityData = m_volumetricData->GetShaderResource();
 
+	if (FAILED(hr = m_volumetricData->CreateTriTableResource()))
+	{
+		delete m_volumetricData;
+		return hr;
+	}
+
+	g_TriTableSRV = m_volumetricData->GetTriTableShaderResource();
+
 	//Create decal buffer
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -163,7 +172,7 @@ HRESULT DirectXApp::createDepthStencil()
 	g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
 
 
-	if (FAILED(hr))
+	//if (FAILED(hr))
 		return hr;
 }
 
@@ -196,6 +205,8 @@ HRESULT DirectXApp::setupConstantBuffer()
 	//0.01f is near clipping plane, 
 	//100.0f is far clipping plane.
 	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_width / (FLOAT)m_height, 0.01f, 100.0f);
+
+	return hr;
 }
 
 /*
@@ -453,7 +464,7 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 /*
 Creates the d3d device and initializes swapchain. Creates the backbuffer. Creates a viewport where we'll draw stuff.
 */
-bool DirectXApp::initDX()
+HRESULT DirectXApp::initDX()
 {
 	//Only allow directx 11
 	D3D_FEATURE_LEVEL featureLevels[] =
@@ -574,6 +585,7 @@ void DirectXApp::render()
 	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
 	g_ImmediateContext->GSGetSamplers(0, 1, &g_SamplerPoint);
 	g_ImmediateContext->GSSetShaderResources(0, 1, &g_DensityData);
+	g_ImmediateContext->GSSetShaderResources(1, 1, &g_TriTableSRV);
 
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
 

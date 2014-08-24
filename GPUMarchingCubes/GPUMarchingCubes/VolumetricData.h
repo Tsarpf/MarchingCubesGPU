@@ -12,7 +12,7 @@ extern int g_TriTable[][16];
 /*vertex decals description*/
 struct DecalBuffer 
 {
-	XMFLOAT3 decal[8];
+	XMFLOAT4 decal[8];
 	//XMFLOAT3 decal1;
 	//XMFLOAT3 decal2;
 	//XMFLOAT3 decal3;

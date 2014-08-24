@@ -38,23 +38,24 @@ HRESULT VolumetricData::CreateTestData()
 void VolumetricData::GetDecals(DecalBuffer& buffer)
 {
 	ZeroMemory(&buffer, sizeof(DecalBuffer));
-	buffer.decal[0] = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	buffer.decal[1] = XMFLOAT3(m_cubeStep.x, 0.0f, 0.0f);
-	buffer.decal[2] = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, 0.0f);
-	buffer.decal[3] = XMFLOAT3(0.0f, m_cubeStep.y, 0.0f);
-	buffer.decal[4] = XMFLOAT3(0.0f, 0.0f, m_cubeStep.z);
-	buffer.decal[5] = XMFLOAT3(m_cubeStep.x, 0.0f, m_cubeStep.z);
-	buffer.decal[6] = XMFLOAT3(m_cubeStep.x, m_cubeStep.y, m_cubeStep.z);
-	buffer.decal[7] = XMFLOAT3(0.0f, m_cubeStep.y, m_cubeStep.z);
+	buffer.decal[0] = XMFLOAT4(0.0f, 0.0f, 0.0f, 1);
+	buffer.decal[1] = XMFLOAT4(m_cubeStep.x, 0.0f, 0.0f, 1);
+	buffer.decal[2] = XMFLOAT4(m_cubeStep.x, m_cubeStep.y, 0.0f, 1);
+	buffer.decal[3] = XMFLOAT4(0.0f, m_cubeStep.y, 0.0f, 1);
+	buffer.decal[4] = XMFLOAT4(0.0f, 0.0f, m_cubeStep.z, 1);
+	buffer.decal[5] = XMFLOAT4(m_cubeStep.x, 0.0f, m_cubeStep.z, 1);
+	buffer.decal[6] = XMFLOAT4(m_cubeStep.x, m_cubeStep.y, m_cubeStep.z, 1);
+	buffer.decal[7] = XMFLOAT4(0.0f, m_cubeStep.y, m_cubeStep.z, 1);
 }
 
 HRESULT VolumetricData::CreateTriTableResource()
 {
 	D3D11_TEXTURE2D_DESC desc;
-	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
+	ZeroMemory(&desc, sizeof(desc));
 	desc.Height = 256;
 	desc.Width = 16;
 	desc.MipLevels = 1;
+	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R32_SINT;
 	desc.SampleDesc = { 1, 0 };
 	desc.Usage = D3D11_USAGE_DEFAULT;
@@ -64,11 +65,11 @@ HRESULT VolumetricData::CreateTriTableResource()
 
 	D3D11_SUBRESOURCE_DATA initData;
 	ZeroMemory(&initData, sizeof(initData));
-	initData.SysMemPitch = 16 * sizeof(float);
-	initData.SysMemSlicePitch = 16 * 256 * sizeof(float);
+	initData.SysMemPitch = 16 * sizeof(int);
+	initData.SysMemSlicePitch = 16 * 256 * sizeof(int);
 	initData.pSysMem = g_TriTable;
 
-	ID3D11Texture2D* texture;
+	ID3D11Texture2D* texture = NULL;
 	HRESULT hr = g_d3dDevice->CreateTexture2D(&desc, &initData, &texture);
 	if (FAILED(hr))
 		return hr;
@@ -147,7 +148,7 @@ int VolumetricData::GetVertices(SimpleVertex** outVertices)
 				//vertex->Color = XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f);
 
 				(*outVertices)[idx] =
-					{ XMFLOAT3(x, y, z), XMFLOAT4((y + 1.0f) / 4.0f, 0.0f, 0.0f, 1.0f) };
+					{ XMFLOAT3(x, y, z), XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f) };
 
 				idx++;
 			}

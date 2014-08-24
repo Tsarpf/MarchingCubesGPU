@@ -579,11 +579,11 @@ void DirectXApp::render()
 
 	//Put the shaders to use
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
-	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 
 	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
+	g_ImmediateContext->GSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
-	g_ImmediateContext->GSGetSamplers(0, 1, &g_SamplerPoint);
+	g_ImmediateContext->GSSetSamplers(0, 1, &g_SamplerPoint);
 	g_ImmediateContext->GSSetShaderResources(0, 1, &g_DensityData);
 	g_ImmediateContext->GSSetShaderResources(1, 1, &g_TriTableSRV);
 

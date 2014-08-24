@@ -150,6 +150,12 @@ int VolumetricData::GetVertices(SimpleVertex** outVertices)
 				(*outVertices)[idx] =
 					{ XMFLOAT3(x, y, z), XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f) };
 
+				//SimpleVertex vertex =
+				//	(*outVertices)[idx];
+
+
+
+
 				idx++;
 			}
 		}

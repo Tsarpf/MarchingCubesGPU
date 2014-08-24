@@ -150,13 +150,16 @@ HRESULT DirectXApp::createDepthStencil()
 	descDepth.Height = m_height;
 	descDepth.MipLevels = 1;
 	descDepth.ArraySize = 1;
+	//8 bit unsigned integer
 	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	//No multisampling and at the maximum quality
 	descDepth.SampleDesc.Count = 1;
 	descDepth.SampleDesc.Quality = 0;
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
+	//actually creates the texture
 	HRESULT hr = g_d3dDevice->CreateTexture2D(&descDepth, NULL, &g_DepthStencil);
 	if (FAILED(hr))
 		return hr;
@@ -250,47 +253,9 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 	if (FAILED(hr))
 		return hr;
 
-
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 	g_ImmediateContext->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
-
-	/*
-	// Create index buffer
-	WORD indices[] =
-	{
-		3, 1, 0,
-		2, 1, 3,
-
-		0, 5, 4,
-		1, 5, 0,
-
-		3, 4, 7,
-		0, 4, 3,
-
-		1, 6, 5,
-		2, 6, 1,
-
-		2, 7, 6,
-		3, 7, 2,
-
-		6, 4, 5,
-		7, 4, 6,
-	};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices (indices) needed for 12 triangles in a triangle list
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	initData.pSysMem = indices;
-	hr = g_d3dDevice->CreateBuffer(&bd, &initData, &g_IndexBuffer);
-	if (FAILED(hr))
-		return hr;
-
-	// Set index buffer
-	g_ImmediateContext->IASetIndexBuffer(g_IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	*/
-
 
 	//Create SO stage buffer
 	ID3D11Buffer* soBuffer;
@@ -304,7 +269,10 @@ HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 		0,
 		0
 	};
-	g_d3dDevice->CreateBuffer(&soBufferDesc, NULL, &soBuffer);
+	hr = g_d3dDevice->CreateBuffer(&soBufferDesc, NULL, &soBuffer);
+	if (FAILED(hr))
+		return hr;
+
 	//put the SO buffer to use
 	UINT soffset[1] = { 0 };
 	//UINT* offset = 
@@ -577,16 +545,21 @@ void DirectXApp::render()
 	cb.m_Projection = XMMatrixTranspose(g_Projection);
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 
-	//Put the shaders to use
+	//Enable vertex shader
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
 
+	//Enable geometry shader
 	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
+	//Set constant buffers to use in the geometry shader
 	g_ImmediateContext->GSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
+	//Set point sampler to use in the geometry shader
 	g_ImmediateContext->GSSetSamplers(0, 1, &g_SamplerPoint);
+	//Set textures to use in the geometry shader
 	g_ImmediateContext->GSSetShaderResources(0, 1, &g_DensityData);
 	g_ImmediateContext->GSSetShaderResources(1, 1, &g_TriTableSRV);
-
+	
+	//Enable pixel shader
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
 
 
@@ -594,6 +567,7 @@ void DirectXApp::render()
 	//g_ImmediateContext->DrawIndexed(36, 0, 0);
 
 
+	//Draw vertices
 	g_ImmediateContext->Draw(m_volumetricData->GetVertexCount(), 0);
 
 	//Switch back buffer and front buffer to show what we've drawn. 

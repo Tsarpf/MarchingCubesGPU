@@ -2,7 +2,6 @@
 
 #include <D3D11.h>
 #include <xnamath.h>
-#include "LookUpTables.cpp"
 //#include "DirectXApp.h"
 //#include <D3DX11.h>
 

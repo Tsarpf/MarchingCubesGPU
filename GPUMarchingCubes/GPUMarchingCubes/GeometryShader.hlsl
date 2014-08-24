@@ -1,123 +1,3 @@
-struct VS_OUTPUT
-{
-	float4 Pos : SV_POSITION;
-	float4 Color : COLOR0;
-};
-
-SamplerState samplerPoint : register(s0);
-Texture3D densityTex : register(t0);
-
-cbuffer cbVertexDecals : register (b1)
-{
-	float3 decal[8];
-	//float3 decal1;
-	//float3 decal2;
-	//float3 decal3;
-	//float3 decal4;
-	//float3 decal5;
-	//float3 decal6;
-	//float3 decal7;
-}
-
-//cbuffer GlobalVariables
-//{
-//	float4 Position;
-//};
-
-//[maxvertexcount(1)]
-//void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
-//{
-//	triStream.Append(input[0]);
-//}
-
-/*
-[maxvertexcount(3)]
-void main(
-	triangle float4 input[3] : SV_POSITION, 
-	inout TriangleStream< GSOutput > output
-)
-{
-	for (uint i = 0; i < 3; i++)
-	{
-		GSOutput element;
-		element.pos = input[i];
-		output.Append(element);
-	}
-}
-*/
-
-
-static float4 Position;
-
-[maxvertexcount(12)]
-void main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> triStream)
-{
-	Position = input[0].Pos;
-	triStream.Append(input[0]);
-}
-
-float3 cubePos(int i)
-{
-	return Position.xyz + decal[i];
-}
-
-float cubeVal(int i)
-{
-	return densityTex.SampleLevel(samplerPoint, (cubePos(i) + 1.0f) / 2.0f, 0);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 int triTable[256][16] =
 { { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
@@ -410,3 +290,209 @@ int edgeTable[256] = {
 	0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
 	0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
 	0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0 };
+
+
+
+struct VS_OUTPUT
+{
+	float4 Pos : SV_POSITION;
+	float4 Color : COLOR0;
+};
+
+SamplerState samplerPoint : register(s0);
+Texture3D densityTex : register(t0);
+
+cbuffer cbVertexDecals : register (b1)
+{
+	float3 decal[8];
+}
+
+cbuffer ConstantBuffer : register(b0)
+{
+	matrix World;
+	matrix View;
+	matrix Projection;
+}
+
+float isolevel = 0.5;
+static float4 Position;
+
+//int triTable[256][16];
+//int edgeTable[256];
+
+float3 cubePos(int i)
+{
+	return Position.xyz + decal[i];
+}
+
+float cubeVal(int i)
+{
+	return densityTex.SampleLevel(samplerPoint, (cubePos(i) + 1.0f) / 2.0f, 0);
+}
+
+float3 vertexInterp(float isolevel, float3 v0, float l0, float3 v1, float l1)
+{
+	return lerp(v0, v1, (isolevel - l0) / (l1 - l0));
+}
+
+int triTableValue(int i, int j)
+{
+	return triTable[i][j];
+}
+
+float4 getProjectionPos(float4 position)
+{
+	position = mul(position, World);
+	position = mul(position, View);
+	position = mul(position, Projection);
+	return position;
+}
+
+[maxvertexcount(12)]
+void main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> triStream)
+{
+	int cubeindex = 0;
+
+	float cubeVal0 = cubeVal(0);
+	float cubeVal1 = cubeVal(1);
+	float cubeVal2 = cubeVal(2);
+	float cubeVal3 = cubeVal(3);
+	float cubeVal4 = cubeVal(4);
+	float cubeVal5 = cubeVal(5);
+	float cubeVal6 = cubeVal(6);
+	float cubeVal7 = cubeVal(7);
+
+	//Determine the index into the edge table which
+	//tells us which vertices are inside of the surface
+	cubeindex = int(cubeVal0 < isolevel);
+	cubeindex += int(cubeVal1 < isolevel) * 2;
+	cubeindex += int(cubeVal2 < isolevel) * 4;
+	cubeindex += int(cubeVal3 < isolevel) * 8;
+	cubeindex += int(cubeVal4 < isolevel) * 16;
+	cubeindex += int(cubeVal5 < isolevel) * 32;
+	cubeindex += int(cubeVal6 < isolevel) * 64;
+	cubeindex += int(cubeVal7 < isolevel) * 128;
+
+	//Cube is entirely in/out of the surface
+	if (cubeindex == 0 || cubeindex == 255)
+		return;
+
+	float3 vertlist[12];
+	
+	//output.Pos = mul(Pos, World);
+	//output.Pos = mul(output.Pos, View);
+	//output.Pos = mul(output.Pos, Projection)
+
+	//Find the vertices where the surface intersects the cube
+	vertlist[0] = vertexInterp(isolevel, cubePos(0), cubeVal0, cubePos(1), cubeVal1);
+	vertlist[1] = vertexInterp(isolevel, cubePos(1), cubeVal1, cubePos(2), cubeVal2);
+	vertlist[2] = vertexInterp(isolevel, cubePos(2), cubeVal2, cubePos(3), cubeVal3);
+	vertlist[3] = vertexInterp(isolevel, cubePos(3), cubeVal3, cubePos(0), cubeVal0);
+	vertlist[4] = vertexInterp(isolevel, cubePos(4), cubeVal4, cubePos(5), cubeVal5);
+	vertlist[5] = vertexInterp(isolevel, cubePos(5), cubeVal5, cubePos(6), cubeVal6);
+	vertlist[6] = vertexInterp(isolevel, cubePos(6), cubeVal6, cubePos(7), cubeVal7);
+	vertlist[7] = vertexInterp(isolevel, cubePos(7), cubeVal7, cubePos(4), cubeVal4);
+	vertlist[8] = vertexInterp(isolevel, cubePos(0), cubeVal0, cubePos(4), cubeVal4);
+	vertlist[9] = vertexInterp(isolevel, cubePos(1), cubeVal1, cubePos(5), cubeVal5);
+	vertlist[10] = vertexInterp(isolevel, cubePos(2), cubeVal2, cubePos(6), cubeVal6);
+	vertlist[11] = vertexInterp(isolevel, cubePos(3), cubeVal3, cubePos(7), cubeVal7);
+
+	// Create the triangle
+	//gl_FrontColor = vec4(cos(isolevel*10.0 - 0.5), sin(isolevel*10.0 - 0.5), cos(1.0 - isolevel), 1.0);
+	int i = 0;
+	//for (i=0; triTableValue(cubeindex, i)!=-1; i+=3) { //Strange bug with this way, uncomment to test
+	VS_OUTPUT output;
+	output.Color = input[0].Pos;
+	while (true)
+	{
+		if (triTableValue(cubeindex, i) != -1)
+		{
+			//Generate first vertex of triangle//
+			//Fill position varying attribute for fragment shader
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i)], 1);
+			//Fill gl_Position attribute for vertex raster space position
+			//gl_Position = gl_ModelViewProjectionMatrix* position;
+			output.Pos = getProjectionPos(output.Pos);
+			triStream.Append(output);
+			//EmitVertex();
+
+			//Generate second vertex of triangle//
+			//Fill position varying attribute for fragment shader
+			//position = float4(vertlist[triTableValue(cubeindex, i + 1)], 1);
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 1)], 1);
+			//Fill gl_Position attribute for vertex raster space position
+			//gl_Position = gl_ModelViewProjectionMatrix* position;
+			output.Pos = getProjectionPos(output.Pos);
+			triStream.Append(output);
+			//EmitVertex();
+
+			//Generate last vertex of triangle//
+			//Fill position varying attribute for fragment shader
+			//position = float4(vertlist[triTableValue(cubeindex, i + 2)], 1);
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 2)], 1);
+			//Fill gl_Position attribute for vertex raster space position
+			//gl_Position = gl_ModelViewProjectionMatrix* position;
+			output.Pos = getProjectionPos(output.Pos);
+			//EmitVertex();
+			triStream.Append(output);
+
+			//End triangle strip at firts triangle
+			//EndPrimitive();
+			triStream.RestartStrip();
+		}
+		else
+		{
+			break;
+		}
+
+		i = i + 3; //Comment it for testing the strange bug
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

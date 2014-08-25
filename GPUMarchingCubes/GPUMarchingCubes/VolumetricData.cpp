@@ -56,6 +56,7 @@ HRESULT VolumetricData::CreateTriTableResource()
 	desc.Width = 16;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
+	//desc.Format = DXGI_FORMAT_R32_SINT;
 	desc.Format = DXGI_FORMAT_R32_SINT;
 	desc.SampleDesc = { 1, 0 };
 	desc.Usage = D3D11_USAGE_DEFAULT;
@@ -66,8 +67,21 @@ HRESULT VolumetricData::CreateTriTableResource()
 	D3D11_SUBRESOURCE_DATA initData;
 	ZeroMemory(&initData, sizeof(initData));
 	initData.SysMemPitch = 16 * sizeof(int);
-	initData.SysMemSlicePitch = 16 * 256 * sizeof(int);
-	initData.pSysMem = g_TriTable;
+	//initData.SysMemPitch = 16 * sizeof(int);
+	//initData.SysMemSlicePitch = 16 * 256 * sizeof(int);
+	initData.SysMemSlicePitch = 0;
+
+
+	int tritable[256 * 16];
+	for (int i = 0; i < 256; i++)
+	{
+		for (int j = 0; j < 16; j++)
+		{
+			tritable[j + i * 16] = g_TriTable[i][j];
+		}
+	}
+	//initData.pSysMem = g_TriTable;
+	initData.pSysMem = tritable;
 
 	ID3D11Texture2D* texture = NULL;
 	HRESULT hr = g_d3dDevice->CreateTexture2D(&desc, &initData, &texture);
@@ -95,6 +109,7 @@ void VolumetricData::createTextureDesc()
 	m_texDesc.Depth = m_depth;
 	m_texDesc.MipLevels = 1;
 	//m_texDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	//m_texDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	m_texDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	m_texDesc.Usage = D3D11_USAGE_DEFAULT;
 	m_texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;

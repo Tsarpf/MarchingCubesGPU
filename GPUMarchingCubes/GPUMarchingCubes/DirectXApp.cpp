@@ -36,6 +36,8 @@ ID3D11ShaderResourceView* g_DensityData = NULL;
 ID3D11ShaderResourceView* g_TriTableSRV = NULL;
 ID3D11SamplerState* g_SamplerPoint = NULL;
 
+ID3D11RasterizerState* g_RasterizerState = NULL;
+
 
 
 //Matrices used for 3D transformations
@@ -431,6 +433,7 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 
 /*
 Creates the d3d device and initializes swapchain. Creates the backbuffer. Creates a viewport where we'll draw stuff.
+Sets up rasterizer
 */
 HRESULT DirectXApp::initDX()
 {
@@ -497,6 +500,26 @@ HRESULT DirectXApp::initDX()
     vp.TopLeftY = 0;
     g_ImmediateContext->RSSetViewports(1, &vp);
 
+
+
+	//Rasterizer description
+	D3D11_RASTERIZER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.FillMode = D3D11_FILL_SOLID;
+	desc.CullMode = D3D11_CULL_NONE;
+	desc.FrontCounterClockwise = FALSE;
+	desc.DepthBias = 0;
+	desc.SlopeScaledDepthBias = 0.0f;
+	desc.DepthBiasClamp = 0.0f;
+	desc.DepthClipEnable = TRUE;
+	desc.ScissorEnable = FALSE;
+	desc.MultisampleEnable = FALSE;
+	desc.AntialiasedLineEnable = FALSE;
+
+	//Create
+	g_d3dDevice->CreateRasterizerState(&desc, &g_RasterizerState);
+	//Put to use
+	g_ImmediateContext->RSSetState(g_RasterizerState);
 
     return S_OK;
 }

@@ -5,7 +5,7 @@ struct VS_OUTPUT
 };
 
 SamplerState samplerPoint : register(s0);
-Texture3D densityTex : register(t0);
+Texture3D<float> densityTex : register(t0);
 Texture2D<int> tritableTex : register (t1);
 
 
@@ -42,7 +42,7 @@ float3 vertexInterp(float isoLevel, float3 v0, float l0, float3 v1, float l1)
 int triTableValue(int i, int j)
 {
 	//return triTable[i][j];
-	return tritableTex.Load(int3(i, j, 1));
+	return tritableTex.Load(int3(i, j, 0));
 }
 
 float4 getProjectionPos(float4 position)
@@ -54,13 +54,17 @@ float4 getProjectionPos(float4 position)
 }
 
 [maxvertexcount(12)]
-void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
+//void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
+void main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> triStream)
 {
 	//Position = input[0].Pos;
-	float isolevel = 5000000000.5;
+	//This doesn't draw anything
+	float isolevel = -1000.5;
+	//This draws all cubes (when cubeindex == 255 commented out below)
+	//float isolevel = 5000000000.5;
 	int cubeindex = 0;
 
-	float4 position = input[0].Pos;
+	float4 position = float4(input[0].Pos.xyz, 1);
 
 	float cubeVal0 = cubeVal(0, position);
 	float cubeVal1 = cubeVal(1, position);
@@ -84,8 +88,8 @@ void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
 
 	//Cube is entirely in/out of the surface
 	//if (cubeindex == 255)
+	//if (cubeindex == 0 || cubeindex == 255)
 	if (cubeindex == 0 || cubeindex == 255)
-	//if (cubeindex == 0) //|| cubeindex == 255)
 		return;
 
 	float3 vertlist[12];
@@ -110,23 +114,20 @@ void main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> triStream)
 
 	// Create the triangle
 	//gl_FrontColor = vec4(cos(isolevel*10.0 - 0.5), sin(isolevel*10.0 - 0.5), cos(1.0 - isolevel), 1.0);
-	int i = 0;
 	//for (i=0; triTableValue(cubeindex, i)!=-1; i+=3) { //Strange bug with this way, uncomment to test
+
 	VS_OUTPUT output;
 	//output.Color = input[0].Color;
 	output.Color = float4(1, 0.2, 0.2, 1);
 
 	output.Pos = input[0].Pos;
-
 	output.Pos = getProjectionPos(output.Pos);
-
 	triStream.Append(output);
 	output.Pos += float4(1, 0, 0, 0);
 	triStream.Append(output);
 	output.Pos += float4(1, 0, 0, 0);
 	triStream.Append(output);
 	triStream.RestartStrip();
-	//triStream.Append(output);
 
 
 	//for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)

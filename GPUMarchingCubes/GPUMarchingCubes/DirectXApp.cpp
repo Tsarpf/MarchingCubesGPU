@@ -131,7 +131,7 @@ HRESULT DirectXApp::setupVisualizationData()
 	{
 		return hr;
 	}
-	return S_OK;
+	//return S_OK;
 
 	DecalBuffer dbuffer;
 	m_volumetricData->GetDecals(dbuffer);
@@ -199,9 +199,9 @@ HRESULT DirectXApp::setupConstantBuffer()
 	g_World = XMMatrixIdentity();
 
 	//Eye position
-	XMVECTOR eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
+	XMVECTOR eye = XMVectorSet(0.0f, 2.0f, -3.0f, 0.0f);
 	//Where to look at
-	XMVECTOR at = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR at = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//Up direction
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(eye, at, up);
@@ -314,7 +314,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	//Create input layout
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};	
 	UINT numElements = ARRAYSIZE(layout);
@@ -378,7 +378,9 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	//sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	//sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = 0;
 	hr = g_d3dDevice->CreateSamplerState(&sampDesc, &g_SamplerPoint);
@@ -397,20 +399,21 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 
 	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
-#if defined( DEBUG ) || defined( _DEBUG )
+//#if defined( DEBUG ) || defined( _DEBUG )
 	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
 	// Setting this flag improves the shader debug output, but still allows 
 	// the shaders to be optimized and to run exactly the way they will run in 
 	// the release configuration of this program.
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
-#endif
+	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+//#endif
 
 	ID3DBlob* errorBlob;
 	//DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
 
 	hr = D3DX11CompileFromFile(FileName, NULL, NULL, EntryPoint, ShaderModel,
-		NULL, NULL, NULL, OutBlob, &errorBlob, NULL);
+		dwShaderFlags, NULL, NULL, OutBlob, &errorBlob, NULL);
 
 	if (FAILED(hr))
 	{
@@ -570,17 +573,18 @@ void DirectXApp::render()
 
 	//Enable vertex shader
 	g_ImmediateContext->VSSetShader(g_VertexShader, NULL, 0);
+	g_ImmediateContext->VSSetConstantBuffers(0, 1, &g_ConstantBuffer); 
 
 	//Enable geometry shader
 	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
 	//Set constant buffers to use in the geometry shader
-	g_ImmediateContext->GSSetConstantBuffers(0, 1, &g_ConstantBuffer);
 	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
+	g_ImmediateContext->GSSetConstantBuffers(0, 1, &g_ConstantBuffer); 
 	//Set point sampler to use in the geometry shader
 	g_ImmediateContext->GSSetSamplers(0, 1, &g_SamplerPoint);
 	//Set textures to use in the geometry shader
-	g_ImmediateContext->GSSetShaderResources(0, 1, &g_DensityData);
-	g_ImmediateContext->GSSetShaderResources(1, 1, &g_TriTableSRV);
+	g_ImmediateContext->GSSetShaderResources(0, 1, &g_TriTableSRV);
+	g_ImmediateContext->GSSetShaderResources(1, 1, &g_DensityData);
 	
 	//Enable pixel shader
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);

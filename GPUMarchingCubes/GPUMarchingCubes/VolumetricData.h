@@ -28,7 +28,7 @@ Vertex description
 */
 struct SimpleVertex
 {
-	XMFLOAT3 Pos;
+	XMFLOAT4 Pos;
 	XMFLOAT4 Color;
 };
 

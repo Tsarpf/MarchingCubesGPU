@@ -37,7 +37,7 @@ HRESULT VolumetricData::CreateTestData()
 
 void VolumetricData::GetDecals(DecalBuffer& buffer)
 {
-	ZeroMemory(&buffer, sizeof(DecalBuffer));
+	ZeroMemory(&buffer, sizeof(buffer));
 	buffer.decal[0] = XMFLOAT4(0.0f, 0.0f, 0.0f, 1);
 	buffer.decal[1] = XMFLOAT4(m_cubeStep.x, 0.0f, 0.0f, 1);
 	buffer.decal[2] = XMFLOAT4(m_cubeStep.x, m_cubeStep.y, 0.0f, 1);
@@ -128,13 +128,14 @@ void VolumetricData::createSubresourceData()
 void VolumetricData::createDataArray()
 {
 	m_data = new float[m_depth*m_height*m_width];
-	for (int z = 0; z < m_depth; z++)
+	for (UINT z = 0; z < m_depth; z++)
 	{
-		for (int y = 0; y < m_height; y++)
+		for (UINT y = 0; y < m_height; y++)
 		{
-			for (int x = 0; x < m_width; x++)
+			for (UINT x = 0; x < m_width; x++)
 			{
-				m_data[getIdx(x, y, z)] = y / m_height * 2 - 1;
+				float result = (float)y / (float)m_height * 2.0f - 1.0f;
+				m_data[getIdx(x, y, z)] = result;
 			}
 		}
 	}
@@ -147,7 +148,7 @@ int VolumetricData::GetVertexCount()
 
 int VolumetricData::GetVertices(SimpleVertex** outVertices)
 {
-	int size = 2.0f / m_cubeStep.x;
+	int size = int(2.0f / m_cubeStep.x);
 	size = size * size * size;
 	m_vertexCount = size;
 	
@@ -163,7 +164,7 @@ int VolumetricData::GetVertices(SimpleVertex** outVertices)
 				//vertex->Color = XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f);
 
 				(*outVertices)[idx] =
-					{ XMFLOAT3(x, y, z), XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f) };
+					{ XMFLOAT4(x, y, z, 1), XMFLOAT4((y + 1.0f) / 2.0f, 0.0f, 0.0f, 1.0f) };
 
 				//SimpleVertex vertex =
 				//	(*outVertices)[idx];

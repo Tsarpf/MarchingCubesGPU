@@ -134,8 +134,14 @@ void VolumetricData::createDataArray()
 		{
 			for (UINT x = 0; x < m_width; x++)
 			{
-				float result = (float)y / (float)m_height * 2.0f - 1.0f;
-				m_data[getIdx(x, y, z)] = result;
+				float result = (float)y / (float)m_height;
+				int idx = getIdx(x, y, z);
+				m_data[idx] = result;
+				float penis = m_data[idx];
+				float sinep = m_data[idx - 1];
+				float anus = sinep;
+				//float result = (float)y / (float)m_height * 2.0f - 1.0f;
+				//m_data[getIdx(x, y, z)] = 1.0f;
 			}
 		}
 	}

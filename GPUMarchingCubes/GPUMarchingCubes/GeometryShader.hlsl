@@ -12,6 +12,7 @@ struct GS_OUTPUT
 
 SamplerState samplerPoint : register(s0);
 Texture2D<int> tritableTex : register (t0);
+//Texture3D<float> densityTex : register(t1);
 Texture3D<float> densityTex : register(t1);
 
 
@@ -67,19 +68,24 @@ float4 getProjectionPos(float4 position)
 void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 {
 	//Position = input[0].Pos;
-	//This doesn't draw anything
-	float isolevel = 0.3;
+	float isolevel = 0.4;
 	//This draws all cubes (when cubeindex == 255 commented out below)
 	//float isolevel = 5000000000.5;
 	int cubeindex = 0;
 
 	float4 position = float4(input[0].Pos.xyz, 1);
-		position.x += 0.1;
-		position.y += 0.1;
+	//position.x += 0.1;
+	//position.y += 1.1;
+
+	float3 cubePosition = position.xyz + decal[0].xyz;
+	cubePosition = (cubePosition + 1.0) / 2.0;
+	float dens = densityTex.Load(int4(cubePosition.xyz, 0));
+
 
 		float cubeVals[8] =
 	{
-		cubeValue(0, position),
+		//cubeValue(0, position),
+		dens,
 		cubeValue(1, position),
 		cubeValue(2, position),
 		cubeValue(3, position),

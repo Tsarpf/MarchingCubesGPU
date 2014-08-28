@@ -39,8 +39,8 @@ float3 cubePos(int i, float4 position)
 float cubeValue(int i, float4 position)
 {
 	float3 cubeposition = cubePos(i, position);
-		float3 cubepositionfixed = (cubeposition + 1.0f) / 2.0f;
-		return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
+	float3 cubepositionfixed = (cubeposition + 1.0f) / 2.0f;
+	return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
 		//return densityTex.Load(int4(cubepositionfixed.xyz, 0));
 }
 
@@ -55,11 +55,12 @@ int triTableValue(int i, int j)
 {
 	//return triTable[i][j];
 	if (i >= 256 || j >= 16)
+	//if (i >= 16 || j >= 256)
 	{
 		return -1;
 	}
 
-	return tritableTex.Load(int3(i, j, 0));
+	return tritableTex.Load(int3(j, i, 0));
 }
 
 float4 getProjectionPos(float4 position)
@@ -78,7 +79,7 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 {
 	//Position = input[0].Pos;
 	//float isolevel = 0.0005;
-	float isolevel = 0.25f;
+	float isolevel = 0.50f;
 
 	float4 position = float4(input[0].Pos.xyz, 1);
 
@@ -88,49 +89,49 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 
 		float3 cubePoses[8] =
 	{
-		(position.xyz + decal[0].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[1].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[2].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[3].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[4].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[5].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[6].xyz + 1.0f) / 2.0f,
-		(position.xyz + decal[7].xyz + 1.0f) / 2.0f
+		(position.xyz + decal[0].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[1].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[2].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[3].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[4].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[5].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[6].xyz),// + 1.0f) / 2.0f,
+		(position.xyz + decal[7].xyz),// + 1.0f) / 2.0f
 	};
 
 
 	//float3 cubePosition = (position.xyz + 1.0f) / 2.0f + decal[0].xyz;
 	//float3 cubePosition = position.xyz + decal[0].xyz;
 	//cubePosition = (cubePosition + 1.0) / 2.0;
-	float dens0 = densityTex.SampleLevel(samplerPoint, cubePoses[0], 0);
+	float dens0 = densityTex.SampleLevel(samplerPoint, (cubePoses[0] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[1].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens1 = densityTex.SampleLevel(samplerPoint, cubePoses[1], 0);
+	float dens1 = densityTex.SampleLevel(samplerPoint, (cubePoses[1] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[2].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens2 = densityTex.SampleLevel(samplerPoint, cubePoses[2], 0);
+	float dens2 = densityTex.SampleLevel(samplerPoint, (cubePoses[2] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[3].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens3 = densityTex.SampleLevel(samplerPoint, cubePoses[3], 0);
+	float dens3 = densityTex.SampleLevel(samplerPoint, (cubePoses[3] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[4].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens4 = densityTex.SampleLevel(samplerPoint, cubePoses[4], 0);
+	float dens4 = densityTex.SampleLevel(samplerPoint, (cubePoses[4] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[5].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens5 = densityTex.SampleLevel(samplerPoint, cubePoses[5], 0);
+	float dens5 = densityTex.SampleLevel(samplerPoint, (cubePoses[5] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[6].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens6 = densityTex.SampleLevel(samplerPoint, cubePoses[6], 0);
+	float dens6 = densityTex.SampleLevel(samplerPoint, (cubePoses[6] + 1.0f) / 2.0f, 0);
 
 	//cubePosition = position.xyz + decal[7].xyz;
 	//cubePosition = (cubePosition + 1.0f) / 2.0f;
-	float dens7 = densityTex.SampleLevel(samplerPoint, cubePoses[7], 0);
+	float dens7 = densityTex.SampleLevel(samplerPoint, (cubePoses[7] + 1.0f) / 2.0f, 0);
 
 
 		float cubeVals[8] =
@@ -216,23 +217,31 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)
 		//for (int i = 0; value != -1; i += 3)
 		{
-			int j = 0;
-			output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
+			//int j = 2;
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 0)], 1);
 			output.Pos = getProjectionPos(output.Pos);
+			//output.Pos += 0.5f;
+			//output.Pos += float4(0,0,95.f,0);
+			//output.Pos += float4(0,0,0.03125f,0);
 			triStream.Append(output);
-			j++;
-
-			output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
+			//j--;
+			
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 1)], 1);
 			output.Pos = getProjectionPos(output.Pos);
+			//output.Pos += float4(0,0,0.03125f,0);
+			//output.Pos += 0.5f;
+			//output.Pos += float4(0,0,95.f,0);
+			//output.Pos += float4(0.03125f,0,0,0);
 			triStream.Append(output);
-			j++;
+			//j--;
 
-			output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 2)], 1);
 			output.Pos = getProjectionPos(output.Pos);
-			output.Pos -= 0.5f;
+			//output.Pos += float4(0.003125f,0,0,0);
+			//output.Pos += 0.0625f;
 			triStream.Append(output);
-			j++;
-
+			//j--;
+			
 			triStream.RestartStrip();
 			//value = triTableValue(cubeindex, i + 1);
 		}

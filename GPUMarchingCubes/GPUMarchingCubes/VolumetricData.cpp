@@ -137,7 +137,7 @@ void VolumetricData::createDataArray()
 				//float result = (float)y / (float)m_height;
 				//float result = ((float)y / (float)m_height + (float)z / (float)m_depth + (float)x / (float)m_width) / 3.0f; //+ 0.1f;
 				//float result = ((float)y / (float)m_height + (float)z / (float)m_depth) / 2.0f; //+ 0.1f;
-				float result = ((float)y / (float)m_height + (float)x / (float)m_depth) / 2.0f; //+ 0.1f;
+				float result = ((float)y / (float)m_height + (float)x / (float)m_width) / 2.0f; //+ 0.1f;
 				//float result = ((float)x / (float)m_depth) / 1.0f; //+ 0.1f;
 				//float result = 0;
 				//if (y >= (float)m_height / 2.0f)

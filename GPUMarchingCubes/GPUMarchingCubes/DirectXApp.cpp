@@ -199,7 +199,7 @@ HRESULT DirectXApp::setupConstantBuffer()
 	g_World = XMMatrixIdentity();
 
 	//Eye position
-	XMVECTOR eye = XMVectorSet(-2.0f, 0.0f, -3.0f, 0.0f);
+	XMVECTOR eye = XMVectorSet(3.0f, 0.0f, -3.0f, 0.0f);
 	//Where to look at
 	XMVECTOR at = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//Up direction
@@ -337,10 +337,10 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		{ 0, "SV_POSITION", 0, 0, 4, 0 },
 		{ 0, "COLOR", 0, 0, 4, 0 },
 	};
-	UINT bufferStrides[2] =
+	UINT bufferStrides[] =
 	{
 		32,	
-		16	
+		16
 	};
 	int numStrides = 2;
 	UINT stream = (UINT)0;
@@ -351,7 +351,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		decl,  //so declaration
 		(UINT)2, //numentries
 		bufferStrides, //pbufferstrides
-		(UINT)1, //numstrides
+		(UINT)2, //numstrides
 		stream, //rasterized stream
 		NULL, //pointert to class linkage (not needed)
 		&g_GeometryShader

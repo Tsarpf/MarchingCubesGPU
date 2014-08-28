@@ -22,7 +22,8 @@ ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
 
 HRESULT VolumetricData::CreateTestData()
 {
-	createDataArray();
+	//createDataArray();
+	createSphere();
 	createTextureDesc();
 	createSubresourceData();
 	HRESULT hr;
@@ -127,6 +128,7 @@ void VolumetricData::createSubresourceData()
 
 void VolumetricData::createDataArray()
 {
+	
 	m_data = new float[m_depth*m_height*m_width];
 	for (UINT z = 0; z < m_depth; z++)
 	{
@@ -151,6 +153,38 @@ void VolumetricData::createDataArray()
 			}
 		}
 	}
+}
+
+void VolumetricData::createSphere()
+{
+	XMFLOAT3 center = XMFLOAT3(m_width / 2.0f, m_height / 2.0f, m_depth / 2.0f);
+	m_data = new float[m_depth*m_height*m_width];
+	for (UINT z = 0; z < m_depth; z++)
+	{
+		for (UINT y = 0; y < m_height; y++)
+		{
+			for (UINT x = 0; x < m_width; x++)
+			{
+				XMFLOAT3 pos(x, y, z);
+
+				//Take distance's complement so the nearer to the center the bigger the density
+				float maxDistance = m_width / 2;
+				float result = 1.0f - (getDistance(pos, center) / maxDistance);
+				int idx = getIdx(x, y, z);
+				m_data[idx] = result;
+			}
+		}
+	}
+}
+
+float VolumetricData::getDistance(XMFLOAT3 p1, XMFLOAT3 p2)
+{
+	XMVECTOR vec1 = XMLoadFloat3(&p1);
+	XMVECTOR vec2 = XMLoadFloat3(&p2);
+	XMVECTOR length = XMVector3Length(vec1 - vec2);
+
+	//Length is put into every component of the vector, lets just return x
+	return XMVectorGetX(length);
 }
 
 int VolumetricData::GetVertexCount()

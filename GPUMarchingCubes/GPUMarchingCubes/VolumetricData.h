@@ -57,6 +57,8 @@ private:
 	void createTextureDesc();
 	void createSubresourceData();
 	void createDataArray();
+	void createSphere();
+	float getDistance(XMFLOAT3, XMFLOAT3);
 	int getIdx(int,int,int);
 
 

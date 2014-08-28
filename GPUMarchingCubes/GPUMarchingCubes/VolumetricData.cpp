@@ -134,12 +134,18 @@ void VolumetricData::createDataArray()
 		{
 			for (UINT x = 0; x < m_width; x++)
 			{
-				float result = (float)y / (float)m_height;
+				//float result = (float)y / (float)m_height;
+				//float result = ((float)y / (float)m_height + (float)z / (float)m_depth + (float)x / (float)m_width) / 3.0f; //+ 0.1f;
+				//float result = ((float)y / (float)m_height + (float)z / (float)m_depth) / 2.0f; //+ 0.1f;
+				float result = ((float)y / (float)m_height + (float)x / (float)m_depth) / 2.0f; //+ 0.1f;
+				//float result = ((float)x / (float)m_depth) / 1.0f; //+ 0.1f;
+				//float result = 0;
+				//if (y >= (float)m_height / 2.0f)
+					//result = 1.0f;
+
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;
-				float penis = m_data[idx];
-				float sinep = m_data[idx - 1];
-				float anus = sinep;
+
 				//float result = (float)y / (float)m_height * 2.0f - 1.0f;
 				//m_data[getIdx(x, y, z)] = 1.0f;
 			}
@@ -190,5 +196,6 @@ int VolumetricData::GetVertices(SimpleVertex** outVertices)
 
 int VolumetricData::getIdx(int x, int y, int z)
 {
-	return x + (y * m_width) + (z * m_width * m_height);
+	//return x + (y * m_width) + (z * m_width * m_depth);
+	return x + m_width * (y + m_height * z);
 }

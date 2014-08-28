@@ -173,8 +173,8 @@ HRESULT DirectXApp::createDepthStencil()
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 	hr = g_d3dDevice->CreateDepthStencilView(g_DepthStencil, &descDSV, &g_DepthStencilView);
-
-	g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
+    //g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
+	g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
 
 
 	//if (FAILED(hr))
@@ -199,7 +199,7 @@ HRESULT DirectXApp::setupConstantBuffer()
 	g_World = XMMatrixIdentity();
 
 	//Eye position
-	XMVECTOR eye = XMVectorSet(0.0f, 2.0f, -3.0f, 0.0f);
+	XMVECTOR eye = XMVectorSet(-2.0f, 0.0f, -3.0f, 0.0f);
 	//Where to look at
 	XMVECTOR at = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//Up direction
@@ -315,7 +315,8 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		//{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};	
 	UINT numElements = ARRAYSIZE(layout);
 	hr = g_d3dDevice->CreateInputLayout(layout, numElements, vsBlob->GetBufferPointer(),
@@ -336,18 +337,23 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		{ 0, "SV_POSITION", 0, 0, 4, 0 },
 		{ 0, "COLOR", 0, 0, 4, 0 },
 	};
-
+	UINT bufferStrides[2] =
+	{
+		32,	
+		16	
+	};
+	int numStrides = 2;
 	UINT stream = (UINT)0;
 	hr = g_d3dDevice->CreateGeometryShaderWithStreamOutput
 	(
 		gsBlob->GetBufferPointer(),
 		gsBlob->GetBufferSize(),
-		decl,
-		(UINT)2,
-		NULL,
-		0,
-		stream,
-		NULL,
+		decl,  //so declaration
+		(UINT)2, //numentries
+		bufferStrides, //pbufferstrides
+		(UINT)1, //numstrides
+		stream, //rasterized stream
+		NULL, //pointert to class linkage (not needed)
 		&g_GeometryShader
 	);
 
@@ -374,7 +380,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	//should refactor this elsewhere
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
-	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -514,7 +520,8 @@ HRESULT DirectXApp::initDX()
 	desc.DepthBias = 0;
 	desc.SlopeScaledDepthBias = 0.0f;
 	desc.DepthBiasClamp = 0.0f;
-	desc.DepthClipEnable = TRUE;
+	//desc.DepthClipEnable = TRUE;
+	desc.DepthClipEnable = FALSE;
 	desc.ScissorEnable = FALSE;
 	desc.MultisampleEnable = FALSE;
 	desc.AntialiasedLineEnable = FALSE;
@@ -560,7 +567,7 @@ void DirectXApp::render()
 
 
 	//Reset depth buffer to max depth
-	g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	//g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	g_ImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 

@@ -40,18 +40,25 @@ float cubeValue(int i, float4 position)
 {
 	float3 cubeposition = cubePos(i, position);
 		float3 cubepositionfixed = (cubeposition + 1.0f) / 2.0f;
-		//return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
-		return densityTex.Load(int4(cubepositionfixed.xyz, 0));
+		return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
+		//return densityTex.Load(int4(cubepositionfixed.xyz, 0));
 }
 
 float3 vertexInterp(float isoLevel, float3 v0, float l0, float3 v1, float l1)
 {
-	return lerp(v0, v1, (isoLevel - l0) / (l1 - l0));
+	float lerper = (isoLevel - l0) / (l1 - l0);
+	float3 lerpper = float3(lerper, lerper, lerper);
+	return lerp(v0, v1, lerpper);
 }
 
 int triTableValue(int i, int j)
 {
 	//return triTable[i][j];
+	if (i >= 256 || j >= 16)
+	{
+		return -1;
+	}
+
 	return tritableTex.Load(int3(i, j, 0));
 }
 
@@ -59,67 +66,98 @@ float4 getProjectionPos(float4 position)
 {
 	position = mul(position, World);
 	position = mul(position, View);
+	//position.x -= 0.5f;
+	//position.y -= 0.5f;
 	position = mul(position, Projection);
 	return position;
 }
 
-[maxvertexcount(22)]
+[maxvertexcount(18)]
 //void main(point GS_INPUT input[1], inout PointStream<GS_OUTPUT> triStream)
 void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 {
 	//Position = input[0].Pos;
-	float isolevel = 0.4;
-	//This draws all cubes (when cubeindex == 255 commented out below)
-	//float isolevel = 5000000000.5;
-	int cubeindex = 0;
+	//float isolevel = 0.0005;
+	float isolevel = 0.25f;
 
 	float4 position = float4(input[0].Pos.xyz, 1);
-	//position.x += 0.1;
-	//position.y += 1.1;
 
-	float3 cubePosition = position.xyz + decal[0].xyz;
-	cubePosition = (cubePosition + 1.0) / 2.0;
-	float dens = densityTex.Load(int4(cubePosition.xyz, 0));
+	//position = (position + 1.0f) / 2.0f;
+	//position = position * 2.0f - (float4(1.0f,1.0f,1.0f,0.0f));
+	
+
+		float3 cubePoses[8] =
+	{
+		(position.xyz + decal[0].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[1].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[2].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[3].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[4].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[5].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[6].xyz + 1.0f) / 2.0f,
+		(position.xyz + decal[7].xyz + 1.0f) / 2.0f
+	};
+
+
+	//float3 cubePosition = (position.xyz + 1.0f) / 2.0f + decal[0].xyz;
+	//float3 cubePosition = position.xyz + decal[0].xyz;
+	//cubePosition = (cubePosition + 1.0) / 2.0;
+	float dens0 = densityTex.SampleLevel(samplerPoint, cubePoses[0], 0);
+
+	//cubePosition = position.xyz + decal[1].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens1 = densityTex.SampleLevel(samplerPoint, cubePoses[1], 0);
+
+	//cubePosition = position.xyz + decal[2].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens2 = densityTex.SampleLevel(samplerPoint, cubePoses[2], 0);
+
+	//cubePosition = position.xyz + decal[3].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens3 = densityTex.SampleLevel(samplerPoint, cubePoses[3], 0);
+
+	//cubePosition = position.xyz + decal[4].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens4 = densityTex.SampleLevel(samplerPoint, cubePoses[4], 0);
+
+	//cubePosition = position.xyz + decal[5].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens5 = densityTex.SampleLevel(samplerPoint, cubePoses[5], 0);
+
+	//cubePosition = position.xyz + decal[6].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens6 = densityTex.SampleLevel(samplerPoint, cubePoses[6], 0);
+
+	//cubePosition = position.xyz + decal[7].xyz;
+	//cubePosition = (cubePosition + 1.0f) / 2.0f;
+	float dens7 = densityTex.SampleLevel(samplerPoint, cubePoses[7], 0);
 
 
 		float cubeVals[8] =
 	{
-		//cubeValue(0, position),
-		dens,
-		cubeValue(1, position),
-		cubeValue(2, position),
-		cubeValue(3, position),
-		cubeValue(4, position),
-		cubeValue(5, position),
-		cubeValue(6, position),
-		cubeValue(7, position)
+		dens0,
+		dens1,
+		dens2,
+		dens3,
+		dens4,
+		dens5,
+		dens6,
+		dens7,
 	};
-	//float cubeValueZero= cubeValue(0, position);
-	//float cubeValueOne= cubeValue(1, position);
-	//float cubeValueTwo= cubeValue(2, position);
-	//float cubeValueThree= cubeValue(3, position);
-	//float cubeValueFour= cubeValue(4, position);
-	//float cubeValueFive = cubeValue(5, position);
-	//float cubeValueSix= cubeValue(6, position);
-	//float cubeValueSeven = cubeValue(7, position);
 
-	//float cubeVal0 = cubeVal(0, position);
-	//float cubeVal1 = cubeVal(1, position);
-	//float cubeVal2 = cubeVal(2, position);
-	//float cubeVal3 = cubeVal(3, position);
-	//float cubeVal4 = cubeVal(4, position);
-	//float cubeVal5 = cubeVal(5, position);
-	//float cubeVal6 = cubeVal(6, position);
-	//float cubeVal7 = cubeVal(7, position);
+	//	float cubeVals[8] =
+	//{
+	//	cubeValue(0, position),
+	//	cubeValue(1, position),
+	//	cubeValue(2, position),
+	//	cubeValue(3, position),
+	//	cubeValue(4, position),
+	//	cubeValue(5, position),
+	//	cubeValue(6, position),
+	//	cubeValue(7, position)
+	//};
 
-	//Determine the index into the edge table which
-	//tells us which vertices are inside of the surface
-	//cubeindex = int(cubeVals[0] < isolevel);
-	//cubeindex += 1 * 2;
-	//cubeindex += 1 * 4;
-	//cubeindex += 1 * 8;
-	//cubeindex += 1 * 16;
-
+	int cubeindex = 0;
 	cubeindex = int(cubeVals[0] < isolevel);
 	cubeindex += int(cubeVals[1] < isolevel) * 2;
 	cubeindex += int(cubeVals[2] < isolevel) * 4;
@@ -145,35 +183,18 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		//output.Pos = mul(output.Pos, Projection)
 
 		//Find the vertices where the surface intersects the cube
-		vertlist[0] = vertexInterp(isolevel, cubePos(0, position), cubeVals[0], cubePos(1, position), cubeVals[1]);
-		vertlist[1] = vertexInterp(isolevel, cubePos(1, position), cubeVals[1], cubePos(2, position), cubeVals[2]);
-		vertlist[2] = vertexInterp(isolevel, cubePos(2, position), cubeVals[2], cubePos(3, position), cubeVals[3]);
-		vertlist[3] = vertexInterp(isolevel, cubePos(3, position), cubeVals[3], cubePos(0, position), cubeVals[0]);
-		vertlist[4] = vertexInterp(isolevel, cubePos(4, position), cubeVals[4], cubePos(5, position), cubeVals[5]);
-		vertlist[5] = vertexInterp(isolevel, cubePos(5, position), cubeVals[5], cubePos(6, position), cubeVals[6]);
-		vertlist[6] = vertexInterp(isolevel, cubePos(6, position), cubeVals[6], cubePos(7, position), cubeVals[7]);
-		vertlist[7] = vertexInterp(isolevel, cubePos(7, position), cubeVals[7], cubePos(4, position), cubeVals[4]);
-		vertlist[8] = vertexInterp(isolevel, cubePos(0, position), cubeVals[0], cubePos(4, position), cubeVals[4]);
-		vertlist[9] = vertexInterp(isolevel, cubePos(1, position), cubeVals[1], cubePos(5, position), cubeVals[5]);
-		vertlist[10] = vertexInterp(isolevel, cubePos(2, position), cubeVals[2], cubePos(6, position), cubeVals[6]);
-		vertlist[11] = vertexInterp(isolevel, cubePos(3, position), cubeVals[3], cubePos(7, position), cubeVals[7]);
-
-		/*vertlist[0] = vertexInterp(isolevel, cubePos(0, position), cubeValueZero, cubePos(1, position), cubeValueOne);
-		vertlist[1] = vertexInterp(isolevel, cubePos(1, position), cubeVals[1], cubePos(2, position), cubeValueTwo);
-		vertlist[2] = vertexInterp(isolevel, cubePos(2, position), cubeVals[2], cubePos(3, position), cubeValueThree);
-		vertlist[3] = vertexInterp(isolevel, cubePos(3, position), cubeVals[3], cubePos(0, position), cubeVals[0]);
-		vertlist[4] = vertexInterp(isolevel, cubePos(4, position), cubeVals[4], cubePos(5, position), cubeVals[5]);
-		vertlist[5] = vertexInterp(isolevel, cubePos(5, position), cubeVals[5], cubePos(6, position), cubeVals[6]);
-		vertlist[6] = vertexInterp(isolevel, cubePos(6, position), cubeVals[6], cubePos(7, position), cubeVals[7]);
-		vertlist[7] = vertexInterp(isolevel, cubePos(7, position), cubeVals[7], cubePos(4, position), cubeVals[4]);
-		vertlist[8] = vertexInterp(isolevel, cubePos(0, position), cubeVals[0], cubePos(4, position), cubeVals[4]);
-		vertlist[9] = vertexInterp(isolevel, cubePos(1, position), cubeVals[1], cubePos(5, position), cubeVals[5]);
-		vertlist[10] = vertexInterp(isolevel, cubePos(2, position), cubeVals[2], cubePos(6, position), cubeVals[6]);
-		vertlist[11] = vertexInterp(isolevel, cubePos(3, position), cubeVals[3], cubePos(7, position), cubeVals[7]); */
-
-		// Create the triangle
-		//gl_FrontColor = vec4(cos(isolevel*10.0 - 0.5), sin(isolevel*10.0 - 0.5), cos(1.0 - isolevel), 1.0);
-		//for (i=0; triTableValue(cubeindex, i)!=-1; i+=3) { //Strange bug with this way, uncomment to test
+		vertlist[0] =  vertexInterp(isolevel, cubePoses[0], cubeVals[0], cubePoses[1], cubeVals[1]);
+		vertlist[1] =  vertexInterp(isolevel, cubePoses[1], cubeVals[1], cubePoses[2], cubeVals[2]);
+		vertlist[2] =  vertexInterp(isolevel, cubePoses[2], cubeVals[2], cubePoses[3], cubeVals[3]);
+		vertlist[3] =  vertexInterp(isolevel, cubePoses[3], cubeVals[3], cubePoses[0], cubeVals[0]);
+		vertlist[4] =  vertexInterp(isolevel, cubePoses[4], cubeVals[4], cubePoses[5], cubeVals[5]);
+		vertlist[5] =  vertexInterp(isolevel, cubePoses[5], cubeVals[5], cubePoses[6], cubeVals[6]);
+		vertlist[6] =  vertexInterp(isolevel, cubePoses[6], cubeVals[6], cubePoses[7], cubeVals[7]);
+		vertlist[7] =  vertexInterp(isolevel, cubePoses[7], cubeVals[7], cubePoses[4], cubeVals[4]);
+		vertlist[8] =  vertexInterp(isolevel, cubePoses[0], cubeVals[0], cubePoses[4], cubeVals[4]);
+		vertlist[9] =  vertexInterp(isolevel, cubePoses[1], cubeVals[1], cubePoses[5], cubeVals[5]);
+		vertlist[10] = vertexInterp(isolevel, cubePoses[2], cubeVals[2], cubePoses[6], cubeVals[6]);
+		vertlist[11] = vertexInterp(isolevel, cubePoses[3], cubeVals[3], cubePoses[7], cubeVals[7]);
 
 		GS_OUTPUT output;
 		//output.Color = input[0].Color;
@@ -189,15 +210,31 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		//triStream.RestartStrip();
 
 
+		//triStream.RestartStrip();
+
+		//int value = triTableValue(cubeindex, 0);
 		for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)
+		//for (int i = 0; value != -1; i += 3)
 		{
-			for (int j = 0; j < 3; j++)
-			{
-				output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
-				output.Pos = getProjectionPos(output.Pos);
-				triStream.Append(output);
-			}
+			int j = 0;
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
+			output.Pos = getProjectionPos(output.Pos);
+			triStream.Append(output);
+			j++;
+
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
+			output.Pos = getProjectionPos(output.Pos);
+			triStream.Append(output);
+			j++;
+
+			output.Pos = float4(vertlist[triTableValue(cubeindex, i + j)], 1);
+			output.Pos = getProjectionPos(output.Pos);
+			output.Pos -= 0.5f;
+			triStream.Append(output);
+			j++;
+
 			triStream.RestartStrip();
+			//value = triTableValue(cubeindex, i + 1);
 		}
 	}
 }

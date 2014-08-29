@@ -2,6 +2,7 @@
 
 #include <D3D11.h>
 #include <xnamath.h>
+#include <noise\noise.h>
 //#include "DirectXApp.h"
 //#include <D3DX11.h>
 
@@ -58,10 +59,12 @@ private:
 	void createSubresourceData();
 	void createDataArray();
 	void createSphere();
+	void createRandomNoise();
 	float getDistance(XMFLOAT3, XMFLOAT3);
 	int getIdx(int,int,int);
 
 
+	noise::module::Perlin m_perlinNoise;
 	int m_vertexCount;
 	XMFLOAT3 m_cubeSize;
 	XMFLOAT3 m_cubeStep;

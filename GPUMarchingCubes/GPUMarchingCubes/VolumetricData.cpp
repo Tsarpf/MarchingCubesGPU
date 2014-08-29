@@ -23,7 +23,8 @@ ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
 HRESULT VolumetricData::CreateTestData()
 {
 	//createDataArray();
-	createSphere();
+	createRandomNoise();
+	//createSphere();
 	createTextureDesc();
 	createSubresourceData();
 	HRESULT hr;
@@ -73,16 +74,16 @@ HRESULT VolumetricData::CreateTriTableResource()
 	initData.SysMemSlicePitch = 0;
 
 
-	int tritable[256 * 16];
-	for (int i = 0; i < 256; i++)
-	{
-		for (int j = 0; j < 16; j++)
-		{
-			tritable[j + i * 16] = g_TriTable[i][j];
-		}
-	}
-	//initData.pSysMem = g_TriTable;
-	initData.pSysMem = tritable;
+	//int tritable[256 * 16];
+	//for (int i = 0; i < 256; i++)
+	//{
+	//	for (int j = 0; j < 16; j++)
+	//	{
+	//		tritable[j + i * 16] = g_TriTable[i][j];
+	//	}
+	//}
+	initData.pSysMem = g_TriTable;
+	//initData.pSysMem = tritable;
 
 	ID3D11Texture2D* texture = NULL;
 	HRESULT hr = g_d3dDevice->CreateTexture2D(&desc, &initData, &texture);
@@ -150,6 +151,31 @@ void VolumetricData::createDataArray()
 
 				//float result = (float)y / (float)m_height * 2.0f - 1.0f;
 				//m_data[getIdx(x, y, z)] = 1.0f;
+			}
+		}
+	}
+}
+
+void VolumetricData::createRandomNoise()
+{
+	m_data = new float[m_depth*m_height*m_width];
+	for (UINT z = 0; z < m_depth; z++)
+	{
+		for (UINT y = 0; y < m_height; y++)
+		{
+			for (UINT x = 0; x < m_width; x++)
+			{
+				XMFLOAT3 pos(x, y, z);
+
+				//Take distance's complement so the nearer to the center the bigger the density
+				//float maxDistance = m_width / 2;
+				//float result = 1.0f - (getDistance(pos, center) / maxDistance);
+				//int idx = getIdx(x, y, z);
+				//m_data[idx] = result;
+
+				double result = m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
+				int idx = getIdx(x, y, z);
+				m_data[idx] = result;
 			}
 		}
 	}

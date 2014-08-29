@@ -173,8 +173,8 @@ HRESULT DirectXApp::createDepthStencil()
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 	hr = g_d3dDevice->CreateDepthStencilView(g_DepthStencil, &descDSV, &g_DepthStencilView);
-    //g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
-	g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
+    g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
+	//g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, NULL);
 
 
 	//if (FAILED(hr))
@@ -205,6 +205,8 @@ HRESULT DirectXApp::setupConstantBuffer()
 	//Up direction
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(eye, at, up);
+
+	//Light position
 
 	//XM_PIDIV2 is pi / 2 aka 90 degrees field of view
 	//0.01f is near clipping plane, 
@@ -336,13 +338,14 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	{
 		{ 0, "SV_POSITION", 0, 0, 4, 0 },
 		{ 0, "COLOR", 0, 0, 4, 0 },
+		{ 0, "NORMAL", 0, 0, 3, 0 }
 	};
-	UINT bufferStrides[] =
-	{
-		32,	
-		16
-	};
-	int numStrides = 2;
+	//UINT bufferStrides[] =
+	//{
+	//	32,	
+	//	16
+	//};
+	//int numStrides = 2;
 	UINT stream = (UINT)0;
 	hr = g_d3dDevice->CreateGeometryShaderWithStreamOutput
 	(
@@ -350,8 +353,10 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		gsBlob->GetBufferSize(),
 		decl,  //so declaration
 		(UINT)2, //numentries
-		bufferStrides, //pbufferstrides
-		(UINT)2, //numstrides
+		//bufferStrides, //pbufferstrides
+		NULL,
+		0,
+		//(UINT)2, //numstrides
 		stream, //rasterized stream
 		NULL, //pointert to class linkage (not needed)
 		&g_GeometryShader
@@ -520,8 +525,8 @@ HRESULT DirectXApp::initDX()
 	desc.DepthBias = 0;
 	desc.SlopeScaledDepthBias = 0.0f;
 	desc.DepthBiasClamp = 0.0f;
-	//desc.DepthClipEnable = TRUE;
-	desc.DepthClipEnable = FALSE;
+	desc.DepthClipEnable = TRUE;
+	//desc.DepthClipEnable = FALSE;
 	desc.ScissorEnable = FALSE;
 	desc.MultisampleEnable = FALSE;
 	desc.AntialiasedLineEnable = FALSE;
@@ -567,7 +572,7 @@ void DirectXApp::render()
 
 
 	//Reset depth buffer to max depth
-	//g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	g_ImmediateContext->ClearDepthStencilView(g_DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	g_ImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
@@ -576,6 +581,8 @@ void DirectXApp::render()
 	cb.m_World = XMMatrixTranspose(g_World);
 	cb.m_View = XMMatrixTranspose(g_View);
 	cb.m_Projection = XMMatrixTranspose(g_Projection);
+	cb.m_LightPosition = XMFLOAT4(0, 5.0f, -3.0f, 0);
+
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 
 	//Enable vertex shader
@@ -585,8 +592,8 @@ void DirectXApp::render()
 	//Enable geometry shader
 	g_ImmediateContext->GSSetShader(g_GeometryShader, NULL, 0);
 	//Set constant buffers to use in the geometry shader
-	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
 	g_ImmediateContext->GSSetConstantBuffers(0, 1, &g_ConstantBuffer); 
+	g_ImmediateContext->GSSetConstantBuffers(1, 1, &g_DecalBuffer);
 	//Set point sampler to use in the geometry shader
 	g_ImmediateContext->GSSetSamplers(0, 1, &g_SamplerPoint);
 	//Set textures to use in the geometry shader
@@ -595,6 +602,7 @@ void DirectXApp::render()
 	
 	//Enable pixel shader
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
+	g_ImmediateContext->PSSetConstantBuffers(0, 1, &g_ConstantBuffer); 
 
 
 	//Draws the 36 indices currently bound to the device

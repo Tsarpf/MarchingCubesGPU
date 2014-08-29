@@ -36,6 +36,7 @@ private:
 	//Window and viewport size
 	UINT m_width = 640;
 	UINT m_height = 480;
+	XMFLOAT4 m_lightPosition;
 };
 
 /*
@@ -46,4 +47,5 @@ struct ConstantBuffer
 	XMMATRIX m_World;
 	XMMATRIX m_View;
 	XMMATRIX m_Projection;
+	XMFLOAT4 m_LightPosition;
 };

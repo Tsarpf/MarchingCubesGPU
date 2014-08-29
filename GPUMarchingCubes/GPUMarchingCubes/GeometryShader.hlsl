@@ -8,6 +8,9 @@ struct GS_OUTPUT
 {
 	float4 Color : COLOR0;
 	float4 Pos : SV_POSITION;
+	float4 WorldPos : TEXCOORD;
+	float3 Normal : NORMAL;
+
 };
 
 SamplerState samplerPoint : register(s0);
@@ -21,6 +24,7 @@ cbuffer ConstantBuffer : register(b0)
 	matrix World;
 	matrix View;
 	matrix Projection;
+	float4 LightPosition;
 }
 
 cbuffer cbVertexDecals : register (b1)
@@ -200,50 +204,64 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		GS_OUTPUT output;
 		//output.Color = input[0].Color;
 		output.Color = float4(1, 0.2, 0.2, 1);
-
-		//output.Pos = input[0].Pos;
-		//output.Pos = getProjectionPos(output.Pos);
-		//triStream.Append(output);
-		//output.Pos += float4(1, 0, 0, 0);
-		//triStream.Append(output);
-		//output.Pos += float4(1, 0, 0, 0);
-		//triStream.Append(output);
-		//triStream.RestartStrip();
+		//output.Color = input[0].Color;
 
 
-		//triStream.RestartStrip();
+		GS_OUTPUT point1;
+		GS_OUTPUT point2;
+		GS_OUTPUT point3;
 
-		//int value = triTableValue(cubeindex, 0);
+		float4 worldPos1;
+		float4 worldPos2;
+		float4 worldPos3;
+
+		float3 vector1;
+		float3 vector2;
 		for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)
-		//for (int i = 0; value != -1; i += 3)
 		{
-			//int j = 2;
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 0)], 1);
+			worldPos1 = mul(output.Pos, World);
 			output.Pos = getProjectionPos(output.Pos);
-			//output.Pos += 0.5f;
-			//output.Pos += float4(0,0,95.f,0);
-			//output.Pos += float4(0,0,0.03125f,0);
-			triStream.Append(output);
-			//j--;
+			point1 = output;
 			
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 1)], 1);
+			worldPos2 = mul(output.Pos, World);
 			output.Pos = getProjectionPos(output.Pos);
-			//output.Pos += float4(0,0,0.03125f,0);
-			//output.Pos += 0.5f;
-			//output.Pos += float4(0,0,95.f,0);
-			//output.Pos += float4(0.03125f,0,0,0);
-			triStream.Append(output);
-			//j--;
+			point2 = output;
 
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 2)], 1);
+			worldPos3 = mul(output.Pos, World);
 			output.Pos = getProjectionPos(output.Pos);
-			//output.Pos += float4(0.003125f,0,0,0);
-			//output.Pos += 0.0625f;
-			triStream.Append(output);
-			//j--;
+			point3 = output;
+
+			//Transform to world space, but not view and projection space
+			//point1.Pos = mul(point1.Pos, World);
+			//point2.Pos = mul(point1.Pos, World);
+			//point3.Pos = mul(point1.Pos, World);
+
+			//vector1 = point1.Pos - point2.Pos;
+			vector1 = worldPos1 - worldPos2;
+			//vector2 = point1.Pos - point3.Pos;
+			vector2 = worldPos1 - worldPos3;
+
+			float3 normalVec = normalize(cross(vector1, vector2));
+
+			point1.Normal = normalVec;
+			point2.Normal = normalVec;
+			point3.Normal = normalVec;
+
+			//point1.WorldPos = point1.Pos;
+			point1.WorldPos = worldPos1;
+			//point2.WorldPos = point2.Pos;
+			point2.WorldPos = worldPos2;
+			//point3.WorldPos = point3.Pos;
+			point3.WorldPos = worldPos3;
 			
+
+			triStream.Append(point1);
+			triStream.Append(point2);
+			triStream.Append(point3);
 			triStream.RestartStrip();
-			//value = triTableValue(cubeindex, i + 1);
 		}
 	}
 }

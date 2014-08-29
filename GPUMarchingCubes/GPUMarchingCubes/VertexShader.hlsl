@@ -13,19 +13,8 @@ struct VS_OUTPUT
 
 VS_OUTPUT main( float4 Pos : POSITION, float4 Color : COLOR)
 {
-	//float4 position = float4(pos.xyz, 0.5f);
-	//return position;
-	//VS_OUTPUT output = (VS_OUTPUT)0;
-	//output.Pos = mul(Pos, World);
-	//output.Pos = mul(output.Pos, View);
-	//output.Pos = mul(output.Pos, Projection);
-	//output.Color = Color;
-	//return output;
 	VS_OUTPUT output = (VS_OUTPUT)0;
 	output.Pos = float4(Pos.xyz, 1);
-	//output.Pos = mul(Pos, World);
-	//output.Pos = mul(output.Pos, View);
-	//output.Pos = mul(output.Pos, Projection);
 	output.Color = Color;
 	return output;
 }

@@ -199,7 +199,7 @@ HRESULT DirectXApp::setupConstantBuffer()
 	g_World = XMMatrixIdentity();
 
 	//Eye position
-	XMVECTOR eye = XMVectorSet(3.0f, 0.0f, -3.0f, 0.0f);
+	XMVECTOR eye = XMVectorSet(0.0f, 0.0f, -2.0f, 0.0f);
 	//Where to look at
 	XMVECTOR at = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//Up direction
@@ -581,7 +581,7 @@ void DirectXApp::render()
 	cb.m_World = XMMatrixTranspose(g_World);
 	cb.m_View = XMMatrixTranspose(g_View);
 	cb.m_Projection = XMMatrixTranspose(g_Projection);
-	cb.m_LightPosition = XMFLOAT4(0, 5.0f, -3.0f, 0);
+	cb.m_LightPosition = XMFLOAT4(0, 5.0f, -5.0f, 0);
 
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 

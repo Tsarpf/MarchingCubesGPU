@@ -220,17 +220,20 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)
 		{
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 0)], 1);
-			worldPos1 = mul(output.Pos, World);
+			worldPos1 = mul(mul(output.Pos, World), View);
+			//worldPos1 = mul(output.Pos, World);
 			output.Pos = getProjectionPos(output.Pos);
 			point1 = output;
 			
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 1)], 1);
-			worldPos2 = mul(output.Pos, World);
+			//worldPos2 = mul(output.Pos, World);
+			worldPos2 = mul(mul(output.Pos, World), View);
 			output.Pos = getProjectionPos(output.Pos);
 			point2 = output;
 
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 2)], 1);
-			worldPos3 = mul(output.Pos, World);
+			//worldPos3 = mul(output.Pos, World);
+			worldPos3 = mul(mul(output.Pos, World), View);
 			output.Pos = getProjectionPos(output.Pos);
 			point3 = output;
 

@@ -97,6 +97,8 @@ HRESULT DirectXApp::setupVisualizationData()
 	int height, depth, width;
 	height = depth = width = 128;
 
+	m_dataStep = XMFLOAT4(1.0f / (float)width, 1.0f / (float)height, 1.0f / (float)depth, 1);
+
 	XMFLOAT3 cubeSize(32.0f, 32.0f, 32.0f);
 	//2.0f to decrease density
 	XMFLOAT3 cubeStep(2.0f / cubeSize.x, 2.0f / cubeSize.y, 2.0f / cubeSize.z);
@@ -123,7 +125,7 @@ HRESULT DirectXApp::setupVisualizationData()
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(DecalBuffer);
+	bd.ByteWidth = sizeof(OnceBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
 	hr = g_d3dDevice->CreateBuffer(&bd, NULL, &g_DecalBuffer);
@@ -133,8 +135,9 @@ HRESULT DirectXApp::setupVisualizationData()
 	}
 	//return S_OK;
 
-	DecalBuffer dbuffer;
+	OnceBuffer dbuffer;
 	m_volumetricData->GetDecals(dbuffer);
+	dbuffer.dataStep = m_dataStep;
 	g_ImmediateContext->UpdateSubresource(g_DecalBuffer, 0, NULL, &dbuffer, 0, 0);
 
 	return S_OK;
@@ -338,7 +341,7 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	{
 		{ 0, "SV_POSITION", 0, 0, 4, 0 },
 		{ 0, "COLOR", 0, 0, 4, 0 },
-		{ 0, "NORMAL", 0, 0, 3, 0 }
+		{ 0, "TEXCOORD", 0, 0, 4, 0 },
 	};
 	UINT stream = (UINT)0;
 	hr = g_d3dDevice->CreateGeometryShaderWithStreamOutput
@@ -346,7 +349,8 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		gsBlob->GetBufferPointer(),
 		gsBlob->GetBufferSize(),
 		decl,  //so declaration
-		(UINT)2, //numentries
+		(UINT)3, //numentries
+		//ARRAYSIZE(decl), //numentries
 		//bufferStrides, //pbufferstrides
 		NULL,
 		0,
@@ -597,6 +601,9 @@ void DirectXApp::render()
 	//Enable pixel shader
 	g_ImmediateContext->PSSetShader(g_PixelShader, NULL, 0);
 	g_ImmediateContext->PSSetConstantBuffers(0, 1, &g_ConstantBuffer); 
+	g_ImmediateContext->PSSetConstantBuffers(1, 1, &g_DecalBuffer); 
+	g_ImmediateContext->PSSetShaderResources(0, 1, &g_DensityData);
+	g_ImmediateContext->PSSetSamplers(0, 1, &g_SamplerPoint);
 
 
 	//Draws the 36 indices currently bound to the device

@@ -37,7 +37,7 @@ HRESULT VolumetricData::CreateTestData()
 	return S_OK;
 }
 
-void VolumetricData::GetDecals(DecalBuffer& buffer)
+void VolumetricData::GetDecals(OnceBuffer& buffer)
 {
 	ZeroMemory(&buffer, sizeof(buffer));
 	buffer.decal[0] = XMFLOAT4(0.0f, 0.0f, 0.0f, 1);

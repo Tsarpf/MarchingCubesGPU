@@ -33,6 +33,8 @@ private:
 
 	VolumetricData* m_volumetricData;
 
+	XMFLOAT4 m_dataStep;
+
 	//Window and viewport size
 	UINT m_width = 640;
 	UINT m_height = 480;

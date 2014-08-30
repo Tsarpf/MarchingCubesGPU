@@ -11,9 +11,10 @@ extern ID3D11Device* g_d3dDevice;
 extern int g_TriTable[][16];
 
 /*vertex decals description*/
-struct DecalBuffer 
+struct OnceBuffer 
 {
 	XMFLOAT4 decal[8];
+	XMFLOAT4 dataStep;
 	//XMFLOAT3 decal1;
 	//XMFLOAT3 decal2;
 	//XMFLOAT3 decal3;
@@ -43,7 +44,7 @@ public:
 
 	HRESULT CreateTestData();
 	ID3D11ShaderResourceView* GetShaderResource();
-	void GetDecals(DecalBuffer&);
+	void GetDecals(OnceBuffer&);
 	int GetVertices(SimpleVertex** outVertices);
 	int GetVertexCount();
 	ID3D11ShaderResourceView* GetTriTableShaderResource();

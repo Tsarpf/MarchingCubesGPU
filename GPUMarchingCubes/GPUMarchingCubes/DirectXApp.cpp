@@ -340,12 +340,6 @@ HRESULT DirectXApp::compileAndEnableShaders()
 		{ 0, "COLOR", 0, 0, 4, 0 },
 		{ 0, "NORMAL", 0, 0, 3, 0 }
 	};
-	//UINT bufferStrides[] =
-	//{
-	//	32,	
-	//	16
-	//};
-	//int numStrides = 2;
 	UINT stream = (UINT)0;
 	hr = g_d3dDevice->CreateGeometryShaderWithStreamOutput
 	(

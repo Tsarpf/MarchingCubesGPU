@@ -38,7 +38,7 @@ return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
 */
 float4 main(PS_INPUT input) : SV_TARGET 
 {
-	//float reflectance = 0.4;
+	//float3 leftx1 = 
 
 	float3 gradient = float3(
 		getTexValue((input.WorldPos.xyz + float3(dataStep.x, 0, 0) + 1.0f) / 2.0f) - getTexValue((input.WorldPos.xyz + float3(-dataStep.x, 0, 0) + 1.0f) / 2.0f),
@@ -46,20 +46,19 @@ float4 main(PS_INPUT input) : SV_TARGET
 		getTexValue((input.WorldPos.xyz + float3(0, 0, dataStep.z) + 1.0f) / 2.0f) - getTexValue((input.WorldPos.xyz + float3(0, 0, -dataStep.z) + 1.0f) / 2.0f)
 	);
 
-	//float3 lightDir = normalize(LightPosition.xyz - input.WorldPos.xyz);
-	//float3 normal = normalize(gradient);
+	float3 lightDir = normalize(LightPosition.xyz - input.WorldPos.xyz);
+		float3 normal = normalize(gradient);
+		normal = -normal;
 
+	//float3 lightDir = normalize(LightPosition.xyz - input.WorldPos.xyz);
 	//float4 lightIntensity = dot(lightDir, input.Normal);
 	//float4 lightIntensity = dot(lightDir, normal);
-	//float4 lightIntensity = dot(lightDir, normal);
-	//float4 lightIntensity = dot(normalize(LightPosition.xyz - input.WorldPos.xyz), normalize(gradient));
-	//float4 color = saturate(lightIntensity * input.Color);
-	//float4 color = saturate(dot(normalize(LightPosition.xyz - input.WorldPos.xyz), normalize(gradient)) * input.Color);
+	float4 lightIntensity = dot(lightDir, normal);
+	//float reflectance = 0.4;
+	float4 color = saturate(lightIntensity * input.Color);
 	//float4 color = lightIntensity * input.Color;
-	//color = float4(color.xyz, 1);
-	//return color;
-
-	return saturate(dot(normalize(LightPosition.xyz - input.WorldPos.xyz), normalize(gradient)) * input.Color);
+	color = float4(color.xyz, 1);
+	return color;
 
 	//return float4(1.0f, 1.0f, 0.0f, 1.0f);
 	//return float4(input.Color.xyz, 1);

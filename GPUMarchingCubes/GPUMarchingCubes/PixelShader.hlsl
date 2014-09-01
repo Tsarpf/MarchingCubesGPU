@@ -47,8 +47,8 @@ float4 main(PS_INPUT input) : SV_TARGET
 	);
 
 	float3 lightDir = normalize(LightPosition.xyz - input.WorldPos.xyz);
-		float3 normal = normalize(gradient);
-		normal = -normal;
+	float3 normal = normalize(gradient);
+	normal = -normal;
 
 	//float3 lightDir = normalize(LightPosition.xyz - input.WorldPos.xyz);
 	//float4 lightIntensity = dot(lightDir, input.Normal);

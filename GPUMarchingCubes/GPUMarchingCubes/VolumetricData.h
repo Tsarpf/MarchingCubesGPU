@@ -58,9 +58,13 @@ private:
 	HRESULT createShaderResourceView();
 	void createTextureDesc();
 	void createSubresourceData();
+
+	//Functions for creating noise data
 	void createDataArray();
 	void createSphere();
 	void createRandomNoise();
+	void createBumpySphere();
+
 	float getDistance(XMFLOAT3, XMFLOAT3);
 	int getIdx(int,int,int);
 

@@ -27,7 +27,7 @@ cbuffer ConstantBuffer : register(b0)
 cbuffer cbVertexDecals : register (b1)
 {
 	float4 decal[8];
-	float4 dataSize;
+	float4 dataStep;
 }
 
 float3 cubePos(int i, float4 position)
@@ -35,12 +35,11 @@ float3 cubePos(int i, float4 position)
 	return position.xyz + decal[i].xyz;
 }
 
-float cubeValue(int i, float4 position)
-{
-	float3 cubeposition = cubePos(i, position);
-	//float3 cubepositionfixed = (cubeposition + 1.0f) / 2.0f;
-	return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
-}
+//float cubeValue(int i, float4 position)
+//{
+//	float3 cubeposition = cubePos(i, position);
+//	return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
+//}
 
 float3 vertexInterp(float isoLevel, float3 v0, float l0, float3 v1, float l1)
 {
@@ -111,8 +110,23 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		vertlist[11] = vertexInterp(isolevel, cubePoses[3], cubeVals[3], cubePoses[7], cubeVals[7]);
 
 		GS_OUTPUT output;
-		output.Color = float4(1, 0.2, 0.2, 1);
+		//output.Color = float4(1, 0.0, 0.0, 1);
+		float4 thecolor = float4(1.0f, 0.0f, 0.0f, 1.0f);
 		//output.Color = input[0].Color;
+		//The further away a point on the shape is to the center, the more green we put into the final color
+		float3 relativePos = (position.xyz + 1.0f) / 2.0f;
+		float3 center = float3(0.5f, 0.5f, 0.5f);
+		float distanceToCenter = length(relativePos - center);
+
+		float colorg = saturate(distanceToCenter);
+		//output.Color.g += distanceToCenter;
+
+		thecolor.g = colorg;
+		output.Color = thecolor;
+
+		//float3 dataSize = float3(1.0, 1.0, 1.0f) / dataStep.xyz;
+
+		//float3 center = 
 
 
 		GS_OUTPUT point1;
@@ -128,31 +142,19 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)
 		{
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 0)], 1);
-			//worldPos1 = mul(output.Pos, World);
 			worldPos1 = output.Pos;
 			output.Pos = getProjectionPos(output.Pos);
 			point1 = output;
 			
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 1)], 1);
-			//worldPos2 = mul(output.Pos, World);
 			worldPos2 = output.Pos;
 			output.Pos = getProjectionPos(output.Pos);
 			point2 = output;
-
+				
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 2)], 1);
-			//worldPos3 = mul(output.Pos, World);
 			worldPos3 = output.Pos;
 			output.Pos = getProjectionPos(output.Pos);
 			point3 = output;
-
-			//vector1 = worldPos1 - worldPos2;
-			//vector2 = worldPos1 - worldPos3;
-
-			//float3 normalVec = normalize(cross(vector1, vector2));
-
-			//point1.Normal = normalVec;
-			//point2.Normal = normalVec;
-			//point3.Normal = normalVec;
 
 			point1.WorldPos = worldPos1;
 			point2.WorldPos = worldPos2;

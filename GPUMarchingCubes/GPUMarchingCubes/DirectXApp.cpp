@@ -96,6 +96,7 @@ HRESULT DirectXApp::setupVisualizationData()
 {
 	int height, depth, width;
 	height = depth = width = 128;
+	//height = depth = width = 256;
 
 	m_dataStep = XMFLOAT4(1.0f / (float)width, 1.0f / (float)height, 1.0f / (float)depth, 1);
 
@@ -224,19 +225,6 @@ Setup vertex, index and stream output buffers
 */
 HRESULT DirectXApp::setupVertexAndIndexAndSOBuffer()
 {
-	//All vertices we'll output from cpu to gpu for now
-	//SimpleVertex vertices[] =
-	//{
-	//	{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
-	//	{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-	//	{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-	//	{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-	//	{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-	//	{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-	//	{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
-	//	{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
-	//};
-
 	SimpleVertex* vertices = NULL;
 	int vertexCount = m_volumetricData->GetVertices(&vertices);
 
@@ -336,6 +324,10 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	//compile geometry shader
 	ID3DBlob* gsBlob = NULL;
 	hr = compileShaderFromFile(L"GeometryShader.hlsl", "main", "gs_5_0", &gsBlob);
+
+	if (FAILED(hr))
+		return hr;
+
 	//stream output stage input signature declaration
 	D3D11_SO_DECLARATION_ENTRY decl[] =
 	{
@@ -388,8 +380,8 @@ HRESULT DirectXApp::compileAndEnableShaders()
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	//sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
-	sampDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	//sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	//sampDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = 0;
 	hr = g_d3dDevice->CreateSamplerState(&sampDesc, &g_SamplerPoint);
@@ -408,14 +400,14 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 
 	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
-//#if defined( DEBUG ) || defined( _DEBUG )
+#if defined( DEBUG ) || defined( _DEBUG )
 	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
 	// Setting this flag improves the shader debug output, but still allows 
 	// the shaders to be optimized and to run exactly the way they will run in 
 	// the release configuration of this program.
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
 	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-//#endif
+#endif
 
 	ID3DBlob* errorBlob;
 	//DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -518,7 +510,8 @@ HRESULT DirectXApp::initDX()
 	D3D11_RASTERIZER_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.FillMode = D3D11_FILL_SOLID;
-	desc.CullMode = D3D11_CULL_NONE;
+	//desc.CullMode = D3D11_CULL_NONE;
+	desc.CullMode = D3D11_CULL_BACK;
 	desc.FrontCounterClockwise = FALSE;
 	desc.DepthBias = 0;
 	desc.SlopeScaledDepthBias = 0.0f;

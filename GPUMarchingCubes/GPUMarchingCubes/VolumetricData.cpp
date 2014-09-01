@@ -23,7 +23,8 @@ ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
 HRESULT VolumetricData::CreateTestData()
 {
 	//createDataArray();
-	createRandomNoise();
+	//createRandomNoise();
+	createBumpySphere();
 	//createSphere();
 	createTextureDesc();
 	createSubresourceData();
@@ -181,6 +182,33 @@ void VolumetricData::createRandomNoise()
 	}
 }
 
+void VolumetricData::createBumpySphere()
+{
+	XMFLOAT3 center = XMFLOAT3(m_width / 2.0f, m_height / 2.0f, m_depth / 2.0f);
+	m_data = new float[m_depth*m_height*m_width];
+	for (UINT z = 0; z < m_depth; z++)
+	{
+		for (UINT y = 0; y < m_height; y++)
+		{
+			for (UINT x = 0; x < m_width; x++)
+			{
+				XMFLOAT3 pos(x, y, z);
+
+				//Take distance's complement so the nearer to the center the bigger the density
+				float maxDistance = m_width / 2.0f;
+				float result = 1.0f - (getDistance(pos, center) / maxDistance);
+				float bump = (float)m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
+
+				//result += bump / 10.0f;
+				result += bump / 3.5f;
+
+				int idx = getIdx(x, y, z);
+				m_data[idx] = result;
+			}
+		}
+	}
+}
+
 void VolumetricData::createSphere()
 {
 	XMFLOAT3 center = XMFLOAT3(m_width / 2.0f, m_height / 2.0f, m_depth / 2.0f);
@@ -194,7 +222,7 @@ void VolumetricData::createSphere()
 				XMFLOAT3 pos(x, y, z);
 
 				//Take distance's complement so the nearer to the center the bigger the density
-				float maxDistance = m_width / 2;
+				float maxDistance = m_width / 2.0f;
 				float result = 1.0f - (getDistance(pos, center) / maxDistance);
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;
@@ -202,6 +230,8 @@ void VolumetricData::createSphere()
 		}
 	}
 }
+
+
 
 float VolumetricData::getDistance(XMFLOAT3 p1, XMFLOAT3 p2)
 {

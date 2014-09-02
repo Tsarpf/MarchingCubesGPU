@@ -203,7 +203,7 @@ HRESULT DirectXApp::setupConstantBuffer()
 	g_World = XMMatrixIdentity();
 
 	//Eye position
-	XMVECTOR eye = XMVectorSet(0.0f, 0.0f, -2.0f, 0.0f);
+	XMVECTOR eye = XMVectorSet(0.0f, 0.0f, -2.5f, 0.0f);
 	//Where to look at
 	XMVECTOR at = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//Up direction

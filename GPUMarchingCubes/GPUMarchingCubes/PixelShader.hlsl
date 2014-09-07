@@ -1,3 +1,4 @@
+//PIxel shader input description
 struct PS_INPUT 
 {
 	float4 Color : COLOR0;
@@ -5,6 +6,9 @@ struct PS_INPUT
 	float4 WorldPos : TEXCOORD;
 };
 
+/*
+Per frame constant buffer
+*/
 cbuffer ConstantBuffer : register(b0)
 {
 	matrix World;
@@ -13,6 +17,7 @@ cbuffer ConstantBuffer : register(b0)
 	float4 LightPosition;
 }
 
+//Once per app run constant buffer
 cbuffer cbVertexDecals : register (b1)
 {
 	float4 decal[8];
@@ -20,26 +25,21 @@ cbuffer cbVertexDecals : register (b1)
 }
 
 
+//The samplerstate used to sample textures
 SamplerState samplerPoint : register(s0);
+//The texture containing the densities
 Texture3D<float> densityTex : register(t0);
 
+//Samples the texture and gets a value at the specific poitn
 float getTexValue(float3 position)
 {
 	return densityTex.Sample(samplerPoint, position);
-	//return densityTex.SampleLevel(samplerPoint, position, 0);
 }
 
-/*
-float cubeValue(int i, float4 position)
-{
-float3 cubeposition = cubePos(i, position);
-return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
-}
-*/
+//Pixel shader main function
 float4 main(PS_INPUT input) : SV_TARGET 
 {
-	//float3 leftx1 = 
-
+	//Gradient, AKA where in which direction within the scalar field the scalars change the most from this point. Here it is used to get an approximation of the surface's normal at this point.
 	float3 gradient = float3(
 		getTexValue((input.WorldPos.xyz + float3(dataStep.x, 0, 0) + 1.0f) / 2.0f) - getTexValue((input.WorldPos.xyz + float3(-dataStep.x, 0, 0) + 1.0f) / 2.0f),
 		getTexValue((input.WorldPos.xyz + float3(0, dataStep.y, 0) + 1.0f) / 2.0f) - getTexValue((input.WorldPos.xyz + float3(0, -dataStep.y, 0) + 1.0f) / 2.0f),
@@ -50,16 +50,11 @@ float4 main(PS_INPUT input) : SV_TARGET
 	float3 normal = normalize(gradient);
 	normal = -normal;
 
-	//float3 lightDir = normalize(LightPosition.xyz - input.WorldPos.xyz);
-	//float4 lightIntensity = dot(lightDir, input.Normal);
-	//float4 lightIntensity = dot(lightDir, normal);
+	//Simplified lighting calculation
 	float4 lightIntensity = dot(lightDir, normal);
 	//float reflectance = 0.4;
 	float4 color = saturate(lightIntensity * input.Color);
 	//float4 color = lightIntensity * input.Color;
 	color = float4(color.xyz, 1);
 	return color;
-
-	//return float4(1.0f, 1.0f, 0.0f, 1.0f);
-	//return float4(input.Color.xyz, 1);
 }

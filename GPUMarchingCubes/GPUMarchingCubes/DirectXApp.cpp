@@ -8,9 +8,6 @@ HINSTANCE g_hInst = NULL;
 HWND g_hWnd = NULL;
 
 
-/*
-Globals. These will probably be transferred to private parts of the dx app class
-*/
 D3D_DRIVER_TYPE g_DriverType = D3D_DRIVER_TYPE_NULL;
 
 IDXGISwapChain* g_SwapChain = NULL;
@@ -101,6 +98,9 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     return true;
 }
 
+/*
+Generates and sets up all density data etc.
+*/
 HRESULT DirectXApp::setupVisualizationData()
 {
 	int height, depth, width;
@@ -683,6 +683,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     PAINTSTRUCT ps;
     HDC hdc;
 
+	
+	//Here we decide how to drawing messages Windows(tm) sends us
     switch (message)
     {
         case WM_PAINT:

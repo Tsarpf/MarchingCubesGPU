@@ -10,16 +10,22 @@ VolumetricData::~VolumetricData()
 	delete[] m_data;
 	//todo delete other stuff as well...
 }
+
+//Simple getter
 ID3D11ShaderResourceView* VolumetricData::GetShaderResource()
 {
 	return m_shaderResourceView;
 }
 
+//Simple getter
 ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
 {
 	return m_triTableSRV;
 }
 
+/*
+Initializes volumetric data stuff
+*/
 HRESULT VolumetricData::CreateTestData()
 {
 
@@ -27,9 +33,9 @@ HRESULT VolumetricData::CreateTestData()
 	Use one of these to set up the data 	
 	************/
 	//createDataArray();
-	//createRandomNoise();
+	createRandomNoise();
 	//createBumpySphere();
-	createSphere();
+	//createSphere();
 
 
 	createTextureDesc();
@@ -44,6 +50,7 @@ HRESULT VolumetricData::CreateTestData()
 	return S_OK;
 }
 
+//Populates the list of cube corner offsets from the center
 void VolumetricData::GetDecals(OnceBuffer& buffer)
 {
 	ZeroMemory(&buffer, sizeof(buffer));
@@ -91,16 +98,25 @@ HRESULT VolumetricData::CreateTriTableResource()
 	return hr;
 }
 
+/*
+Creates the 3d texture using the data we've generated so it can be into a shader resource and then be used and sampled by the GPU
+*/
 HRESULT VolumetricData::createTexture()
 {
 	return g_d3dDevice->CreateTexture3D(&m_texDesc, &m_subData, &m_texture);
 }
 
+/*
+Creates the shader resource that the GPU can use directly
+*/
 HRESULT VolumetricData::createShaderResourceView()
 {
 	return g_d3dDevice->CreateShaderResourceView(m_texture, NULL, &m_shaderResourceView);
 }
 
+/*
+Describes the texture type, contents, size, etc.
+*/
 void VolumetricData::createTextureDesc()
 {
 	m_texDesc.Width = m_width;
@@ -114,14 +130,24 @@ void VolumetricData::createTextureDesc()
 	m_texDesc.MiscFlags = 0;
 }
 
+/*
+Sets up the data well put into the resource
+*/
 void VolumetricData::createSubresourceData()
 {
 	ZeroMemory(&m_subData, sizeof(m_subData));
+
+	//Size of a 1d line. Eg. distance between adjacent values
 	m_subData.SysMemPitch = m_width * sizeof(float);
+
+	//Size of a 2D slice
 	m_subData.SysMemSlicePitch = m_width * m_height * sizeof(float);
+
+	//The actual data
 	m_subData.pSysMem = m_data;
 }
 
+//Creates a simple surface with sane iso values
 void VolumetricData::createDataArray()
 {
 	
@@ -151,6 +177,7 @@ void VolumetricData::createDataArray()
 	}
 }
 
+//Simply samples coherent noise at every point of the array
 void VolumetricData::createRandomNoise()
 {
 	m_data = new float[m_depth*m_height*m_width];
@@ -176,6 +203,7 @@ void VolumetricData::createRandomNoise()
 	}
 }
 
+//Creates a sphere but adds offsets using noise to make it bumpy
 void VolumetricData::createBumpySphere()
 {
 	XMFLOAT3 center = XMFLOAT3(m_width / 2.0f, m_height / 2.0f, m_depth / 2.0f);
@@ -210,6 +238,9 @@ void VolumetricData::createBumpySphere()
 	}
 }
 
+/*
+Creates a pretty smooth sphere
+*/
 void VolumetricData::createSphere()
 {
 	XMFLOAT3 center = XMFLOAT3(m_width / 2.0f, m_height / 2.0f, m_depth / 2.0f);
@@ -234,6 +265,9 @@ void VolumetricData::createSphere()
 
 
 
+/*
+Gets the distance between two vectors
+*/
 float VolumetricData::getDistance(XMFLOAT3 p1, XMFLOAT3 p2)
 {
 	XMVECTOR vec1 = XMLoadFloat3(&p1);
@@ -244,11 +278,13 @@ float VolumetricData::getDistance(XMFLOAT3 p1, XMFLOAT3 p2)
 	return XMVectorGetX(length);
 }
 
+//Simple getter
 int VolumetricData::GetVertexCount()
 {
 	return m_vertexCount;
 }
 
+/*Creates a cube full of points placed at m_cubeStep.x/y/z intervals*/
 int VolumetricData::GetVertices(SimpleVertex** outVertices)
 {
 	int size = int(2.0f / m_cubeStep.x);
@@ -285,6 +321,9 @@ int VolumetricData::GetVertices(SimpleVertex** outVertices)
 
 
 
+/*
+Gets the correct index when we've flattened a 3d array to 1d array1
+*/
 int VolumetricData::getIdx(int x, int y, int z)
 {
 	//return x + (y * m_width) + (z * m_width * m_depth);

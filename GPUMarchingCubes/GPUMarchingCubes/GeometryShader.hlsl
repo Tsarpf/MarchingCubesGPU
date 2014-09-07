@@ -1,9 +1,13 @@
+//Geometry shader input description
 struct GS_INPUT
 {
 	float4 Pos : SV_POSITION;
 	float4 Color : COLOR0;
 };
 
+/*
+Describes the geometry shader output
+*/
 struct GS_OUTPUT
 {
 	float4 Color : COLOR0;
@@ -11,11 +15,17 @@ struct GS_OUTPUT
 	float4 WorldPos : TEXCOORD;
 };
 
+//Generic sampler
 SamplerState samplerPoint : register(s0);
+//The texture containing the density values
 Texture3D<float> densityTex : register(t1);
+//Triangle look up table
 Texture2D<int> tritableTex : register (t0);
 
 
+/*
+Constant buffer for stuff that could be updated at every frame
+*/
 cbuffer ConstantBuffer : register(b0)
 {
 	matrix World;
@@ -24,7 +34,10 @@ cbuffer ConstantBuffer : register(b0)
 	float4 LightPosition;
 }
 
-cbuffer cbVertexDecals : register (b1)
+/*
+Constant buffer that is only updated once per application run
+*/
+cbuffer cbOncePerAppRun : register (b1)
 {
 	float4 decal[8];
 	float4 dataStep;
@@ -35,12 +48,8 @@ float3 cubePos(int i, float4 position)
 	return position.xyz + decal[i].xyz;
 }
 
-//float cubeValue(int i, float4 position)
-//{
-//	float3 cubeposition = cubePos(i, position);
-//	return densityTex.SampleLevel(samplerPoint, cubeposition, 0);
-//}
-
+/* Interpolates between the given points by a specific amount
+Used to find the vertex position on the cube's edge*/
 float3 vertexInterp(float isoLevel, float3 v0, float l0, float3 v1, float l1)
 {
 	float lerper = (isoLevel - l0) / (l1 - l0);
@@ -48,6 +57,9 @@ float3 vertexInterp(float isoLevel, float3 v0, float l0, float3 v1, float l1)
 }
 
 
+/*
+Gets a value from the look-up table
+*/
 int triTableValue(int i, int j)
 {
 	if (i >= 256 || j >= 16)
@@ -58,6 +70,9 @@ int triTableValue(int i, int j)
 	return tritableTex.Load(int3(j, i, 0));
 }
 
+/*
+Multiplies the position by the world, view and projection matrix
+*/
 float4 getProjectionPos(float4 position)
 {
 	position = mul(position, World);
@@ -66,6 +81,9 @@ float4 getProjectionPos(float4 position)
 	return position;
 }
 
+/*
+Geometry shader main function. The process is described in the documentation better than it can be done here.
+*/
 [maxvertexcount(18)]
 void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 {
@@ -128,16 +146,6 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		vertlist[10] = vertexInterp(isolevel, cubePoses[2], cubeVals[2], cubePoses[6], cubeVals[6]);
 		vertlist[11] = vertexInterp(isolevel, cubePoses[3], cubeVals[3], cubePoses[7], cubeVals[7]);
 
-		//output.Color = float4(1, 0.0, 0.0, 1);
-		//output.Color = input[0].Color;
-		//The further away a point on the shape is to the center, the more green we put into the final color
-		//float colorg = 0;
-		//output.Color.g += distanceToCenter;
-		//float3 dataSize = float3(1.0, 1.0, 1.0f) / dataStep.xyz;
-
-		//float3 center = 
-
-
 		GS_OUTPUT point1;
 		GS_OUTPUT point2;
 		GS_OUTPUT point3;
@@ -150,6 +158,7 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		float3 vector2;
 		for (int i = 0; triTableValue(cubeindex, i) != -1; i += 3)
 		{
+			//Add vertices to the output stream
 			output.Pos = float4(vertlist[triTableValue(cubeindex, i + 0)], 1);
 			worldPos1 = output.Pos;
 			output.Pos = getProjectionPos(output.Pos);

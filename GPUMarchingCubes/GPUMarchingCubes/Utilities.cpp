@@ -10,6 +10,9 @@ Utilities::~Utilities()
 {
 }
 
+/*
+Starts a high precision clock that can be used to measure execution times
+*/
 void Utilities::StartClock()
 {
 	LARGE_INTEGER li;
@@ -23,6 +26,9 @@ void Utilities::StartClock()
 }
 
 
+/*
+Returns current reading of the clock
+*/
 double Utilities::GetClock()
 {
 	LARGE_INTEGER li;
@@ -30,6 +36,9 @@ double Utilities::GetClock()
 	return double(li.QuadPart - CounterStart) / PCFreq;
 }
 
+/*
+Prints a std::string to Visual Studio debug output window
+*/
 void Utilities::PrintToOutput(std::string output)
 {
 	std::wstring stemp = std::wstring(output.begin(), output.end());
@@ -38,6 +47,9 @@ void Utilities::PrintToOutput(std::string output)
 }
 
 
+/*
+Prints the average every nth run of the function
+*/
 void Utilities::PrintFrameAvg(double milliseconds)
 {
 	static int i = 0;

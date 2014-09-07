@@ -64,7 +64,8 @@ HRESULT VolumetricData::CreateTriTableResource()
 	desc.SampleDesc = { 1, 0 };
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = 1;
+	desc.CPUAccessFlags = 0;
+	//desc.CPUAccessFlags = 1;
 	desc.MiscFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA initData;

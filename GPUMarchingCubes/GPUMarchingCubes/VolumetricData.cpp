@@ -189,11 +189,7 @@ void VolumetricData::createBumpySphere()
 				float bump = (float)m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
 
 				//result += bump / 10.0f;
-<<<<<<< HEAD
 				result += bump / 1.5f;
-=======
-				result += (bump / 1.250f);
->>>>>>> origin/master
 
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;

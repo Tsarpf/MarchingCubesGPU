@@ -1,0 +1,9 @@
+256x256x256: 	Initialization took: 35232.635630ms
+128x128x128: 	Initialization took: 3937.927333ms
+64x64x64: 	Initialization took: 973.451833ms
+32x32x32: 	Initialization took: 601.133066ms	
+
+256x256x256: 	Avg last 500 frames: 1.008695ms		http://puu.sh/bpD5N/1b615bab98.jpg
+128x128x128: 	Avg last 500 frames: 0.864876ms		http://puu.sh/bpD0N/b7d38f1a8b.jpg
+64x64x64:  	Avg last 500 frames: 0.773988ms		http://puu.sh/bpCYa/bfd7393308.jpg
+32x32x32: 	Avg last 500 frames: 0.720338ms		http://puu.sh/bpCTF/cab371c68c.jpg

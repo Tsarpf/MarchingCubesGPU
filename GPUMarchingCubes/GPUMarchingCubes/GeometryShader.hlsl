@@ -93,18 +93,17 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 
 	GS_OUTPUT output;
 
+	/*
+	These lines create the color differencies between different distances to the center of the area.
+	*/
 	float4 thecolor = float4(0.0f, 0.0f, 1.0f, 1.0f);
 	float3 relativePos = (position.xyz + 1.0f) / 2.0f;
 	float3 center = float3(0.5f, 0.5f, 0.5f);
-	//float distanceToCenter = length(relativePos - center) / 1.5f;
 	float distanceToCenter = length(center - relativePos);
 	float maxDistance = 1.65f;
 
 	float relativeDistance = distanceToCenter / maxDistance;
-
-	//float colorg = saturate(distanceToCenter);
 	float colorg = relativeDistance;
-	//float colorg = saturate(distanceToCenter);
 
 	thecolor.g = colorg;
 	thecolor.b -= (colorg * 3.0f);

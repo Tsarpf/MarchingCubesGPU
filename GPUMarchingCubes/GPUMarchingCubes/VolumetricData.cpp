@@ -22,10 +22,16 @@ ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
 
 HRESULT VolumetricData::CreateTestData()
 {
+
+	/***********
+	Use one of these to set up the data 	
+	************/
 	//createDataArray();
 	//createRandomNoise();
-	createBumpySphere();
-	//createSphere();
+	//createBumpySphere();
+	createSphere();
+
+
 	createTextureDesc();
 	createSubresourceData();
 	HRESULT hr;
@@ -52,7 +58,7 @@ void VolumetricData::GetDecals(OnceBuffer& buffer)
 }
 
 /*
-
+Creates the shader view that the GPU will use as a look-up table to find out triangle configurations for different cases of the cube
 */
 HRESULT VolumetricData::CreateTriTableResource()
 {
@@ -185,6 +191,7 @@ void VolumetricData::createBumpySphere()
 				//Take distance's complement so the nearer to the center the bigger the density
 				float maxDistance = m_width / 2.0f;
 				float result = 1.0f - (getDistance(pos, center) / maxDistance);
+
 				float xdivide = (float)m_width / 4.0f;
 				//float xdivide = (float)m_width;
 				float ydivide = (float)m_height / 4.0f;

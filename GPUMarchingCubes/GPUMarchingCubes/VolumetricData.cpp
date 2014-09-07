@@ -111,8 +111,6 @@ void VolumetricData::createTextureDesc()
 	m_texDesc.Height = m_height;
 	m_texDesc.Depth = m_depth;
 	m_texDesc.MipLevels = 1;
-	//m_texDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	//m_texDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	m_texDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	m_texDesc.Usage = D3D11_USAGE_DEFAULT;
 	m_texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -200,7 +198,7 @@ void VolumetricData::createBumpySphere()
 				float bump = (float)m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
 
 				//result += bump / 10.0f;
-				result += bump / 3.5f;
+				result += bump / 1.5f;
 
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;

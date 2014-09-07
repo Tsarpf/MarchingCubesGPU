@@ -6,8 +6,10 @@
 #include <D3DX11.h>
 #include <xnamath.h>
 #include <d3dcompiler.h>
+#include <string>
 
 #include "VolumetricData.h"
+#include "Utilities.h"
 
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -39,6 +41,7 @@ private:
 	UINT m_width = 640;
 	UINT m_height = 480;
 	XMFLOAT4 m_lightPosition;
+	Utilities m_utils;
 };
 
 /*

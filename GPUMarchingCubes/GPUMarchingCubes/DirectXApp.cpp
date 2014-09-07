@@ -68,6 +68,7 @@ Tries to initialize the whole DirectX app to the point where it's ready to start
 */
 bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+	m_utils.StartClock();
   	if (FAILED(createWindow(hInstance, nCmdShow)))
 		return false;
 
@@ -88,13 +89,23 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
 	if (FAILED(setupConstantBuffer()))
 		return false;
-		
+
+	double milliseconds = m_utils.GetClock();
+
+	std::string output = "Initialization took: ";
+	output += std::to_string(milliseconds);
+	output += '\n';
+
+	m_utils.PrintToOutput(output);
+
     return true;
 }
 
 HRESULT DirectXApp::setupVisualizationData()
 {
 	int height, depth, width;
+	//height = depth = width = 32;
+	//height = depth = width = 64;
 	height = depth = width = 128;
 	//height = depth = width = 256;
 
@@ -545,7 +556,18 @@ bool DirectXApp::Run()
         }
         else
         {
+			m_utils.StartClock();
+
             render();
+
+			double milliseconds = m_utils.GetClock();
+
+			//std::string output = "Rendering took: ";
+			//output += std::to_string(milliseconds);
+			//output += '\n';
+
+			//m_utils.PrintToOutput(output);
+			m_utils.PrintFrameAvg(milliseconds);
         }
     }
 

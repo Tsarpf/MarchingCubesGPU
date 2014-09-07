@@ -84,10 +84,12 @@
     <ClCompile Include="DirectXApp.cpp" />
     <ClCompile Include="LookUpTables.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="VolumetricData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXApp.h" />
+    <ClInclude Include="Utilities.h" />
     <ClInclude Include="VolumetricData.h" />
   </ItemGroup>
   <ItemGroup>

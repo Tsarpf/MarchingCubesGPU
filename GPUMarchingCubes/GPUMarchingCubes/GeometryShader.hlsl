@@ -90,6 +90,26 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 	cubeindex += int(cubeVals[5] < isolevel) * 32;
 	cubeindex += int(cubeVals[6] < isolevel) * 64;
 	cubeindex += int(cubeVals[7] < isolevel) * 128;
+
+	GS_OUTPUT output;
+
+	float4 thecolor = float4(0.0f, 0.0f, 1.0f, 1.0f);
+	float3 relativePos = (position.xyz + 1.0f) / 2.0f;
+	float3 center = float3(0.5f, 0.5f, 0.5f);
+	//float distanceToCenter = length(relativePos - center) / 1.5f;
+	float distanceToCenter = length(center - relativePos);
+	float maxDistance = 1.65f;
+
+	float relativeDistance = distanceToCenter / maxDistance;
+
+	//float colorg = saturate(distanceToCenter);
+	float colorg = relativeDistance;
+	//float colorg = saturate(distanceToCenter);
+
+	thecolor.g = colorg;
+	thecolor.b -= (colorg * 3.0f);
+	output.Color = thecolor;
+
 	
 	if (cubeindex != 0 && cubeindex != 255)
 	{
@@ -109,21 +129,11 @@ void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)
 		vertlist[10] = vertexInterp(isolevel, cubePoses[2], cubeVals[2], cubePoses[6], cubeVals[6]);
 		vertlist[11] = vertexInterp(isolevel, cubePoses[3], cubeVals[3], cubePoses[7], cubeVals[7]);
 
-		GS_OUTPUT output;
 		//output.Color = float4(1, 0.0, 0.0, 1);
-		float4 thecolor = float4(1.0f, 0.0f, 0.0f, 1.0f);
 		//output.Color = input[0].Color;
 		//The further away a point on the shape is to the center, the more green we put into the final color
-		float3 relativePos = (position.xyz + 1.0f) / 2.0f;
-		float3 center = float3(0.5f, 0.5f, 0.5f);
-		float distanceToCenter = length(relativePos - center);
-
-		float colorg = saturate(distanceToCenter);
+		//float colorg = 0;
 		//output.Color.g += distanceToCenter;
-
-		thecolor.g = colorg;
-		output.Color = thecolor;
-
 		//float3 dataSize = float3(1.0, 1.0, 1.0f) / dataStep.xyz;
 
 		//float3 center = 

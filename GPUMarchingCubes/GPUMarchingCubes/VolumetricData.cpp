@@ -64,7 +64,7 @@ HRESULT VolumetricData::CreateTriTableResource()
 	desc.SampleDesc = { 1, 0 };
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = 0;
+	desc.CPUAccessFlags = 1;
 	desc.MiscFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA initData;
@@ -74,15 +74,6 @@ HRESULT VolumetricData::CreateTriTableResource()
 	//initData.SysMemSlicePitch = 16 * 256 * sizeof(int);
 	initData.SysMemSlicePitch = 0;
 
-
-	//int tritable[256 * 16];
-	//for (int i = 0; i < 256; i++)
-	//{
-	//	for (int j = 0; j < 16; j++)
-	//	{
-	//		tritable[j + i * 16] = g_TriTable[i][j];
-	//	}
-	//}
 	initData.pSysMem = g_TriTable;
 	//initData.pSysMem = tritable;
 
@@ -198,7 +189,11 @@ void VolumetricData::createBumpySphere()
 				float bump = (float)m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
 
 				//result += bump / 10.0f;
+<<<<<<< HEAD
 				result += bump / 1.5f;
+=======
+				result += (bump / 1.250f);
+>>>>>>> origin/master
 
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;

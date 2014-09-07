@@ -51,6 +51,9 @@ void VolumetricData::GetDecals(OnceBuffer& buffer)
 	buffer.decal[7] = XMFLOAT4(0.0f, m_cubeStep.y, m_cubeStep.z, 1);
 }
 
+/*
+
+*/
 HRESULT VolumetricData::CreateTriTableResource()
 {
 	D3D11_TEXTURE2D_DESC desc;
@@ -59,24 +62,19 @@ HRESULT VolumetricData::CreateTriTableResource()
 	desc.Width = 16;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
-	//desc.Format = DXGI_FORMAT_R32_SINT;
 	desc.Format = DXGI_FORMAT_R32_SINT;
 	desc.SampleDesc = { 1, 0 };
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
-	//desc.CPUAccessFlags = 1;
 	desc.MiscFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA initData;
 	ZeroMemory(&initData, sizeof(initData));
 	initData.SysMemPitch = 16 * sizeof(int);
-	//initData.SysMemPitch = 16 * sizeof(int);
-	//initData.SysMemSlicePitch = 16 * 256 * sizeof(int);
 	initData.SysMemSlicePitch = 0;
 
 	initData.pSysMem = g_TriTable;
-	//initData.pSysMem = tritable;
 
 	ID3D11Texture2D* texture = NULL;
 	HRESULT hr = g_d3dDevice->CreateTexture2D(&desc, &initData, &texture);
@@ -187,7 +185,13 @@ void VolumetricData::createBumpySphere()
 				//Take distance's complement so the nearer to the center the bigger the density
 				float maxDistance = m_width / 2.0f;
 				float result = 1.0f - (getDistance(pos, center) / maxDistance);
-				float bump = (float)m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
+				float xdivide = (float)m_width / 4.0f;
+				//float xdivide = (float)m_width;
+				float ydivide = (float)m_height / 4.0f;
+				//float ydivide = (float)m_height;
+				float zdivide = (float)m_depth / 4.0f;
+				//float zdivide = (float)m_depth;
+				float bump = (float)m_perlinNoise.GetValue((float)x / xdivide, (float)y / ydivide, (float)z / zdivide);
 
 				//result += bump / 10.0f;
 				result += bump / 1.5f;

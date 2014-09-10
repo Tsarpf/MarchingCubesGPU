@@ -7,10 +7,12 @@
 #include <xnamath.h>
 #include <d3dcompiler.h>
 #include <string>
+#include <math.h>
 
 #include "VolumetricData.h"
 #include "Utilities.h"
 
+#define PI 3.14159265
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 //class VolumetricData;

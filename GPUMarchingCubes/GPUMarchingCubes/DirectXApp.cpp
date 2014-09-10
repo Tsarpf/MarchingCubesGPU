@@ -521,8 +521,8 @@ HRESULT DirectXApp::initDX()
 	D3D11_RASTERIZER_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.FillMode = D3D11_FILL_SOLID;
-	//desc.CullMode = D3D11_CULL_NONE;
-	desc.CullMode = D3D11_CULL_BACK;
+	desc.CullMode = D3D11_CULL_NONE;
+	//desc.CullMode = D3D11_CULL_BACK;
 	desc.FrontCounterClockwise = FALSE;
 	desc.DepthBias = 0;
 	desc.SlopeScaledDepthBias = 0.0f;
@@ -547,6 +547,7 @@ Starts running the window message loop which handles messages to the window and 
 bool DirectXApp::Run()
 {
     MSG msg = { 0 };
+	m_utils.StartClock();
     while(msg.message != WM_QUIT)
     {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -556,7 +557,6 @@ bool DirectXApp::Run()
         }
         else
         {
-			m_utils.StartClock();
 
             render();
 
@@ -566,8 +566,7 @@ bool DirectXApp::Run()
 			//output += std::to_string(milliseconds);
 			//output += '\n';
 
-			//m_utils.PrintToOutput(output);
-			m_utils.PrintFrameAvg(milliseconds);
+			//m_utils.PrintFrameAvg(milliseconds);
         }
     }
 
@@ -589,6 +588,30 @@ void DirectXApp::render()
 
 	g_ImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
+
+	double radius = 2.5;
+
+/*double x = x0 + r * Math.Cos(theta * Math.PI / 180);
+double y = y0 + r * Math.Sin(theta * Math.PI / 180);
+*/
+	double centerX = 0;
+	double centerZ = 0;
+
+	double modulus = fmod(m_utils.GetClock(), 5000.0);
+	double multiplier = modulus / 5000.0;
+	double degrees = 360.0 * multiplier;
+
+	double x = centerX + radius * cos(degrees * PI / 180.0);
+	double z = centerZ + radius * sin(degrees * PI / 180.0);
+
+	//Eye position
+	//XMVECTOR eye = XMVectorSet(0.0f, 0.0f, -2.5f, 0.0f);
+	XMVECTOR eye = XMVectorSet(x, 0.0f, z, 0.0f);
+	//Where to look at
+	XMVECTOR at = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//Up direction
+	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	g_View = XMMatrixLookAtLH(eye, at, up);
 	//Constant buffer is what we'll transfer from the cpu side to the gpu (eg. for the shader code to use)
 	ConstantBuffer cb;
 	cb.m_World = XMMatrixTranspose(g_World);

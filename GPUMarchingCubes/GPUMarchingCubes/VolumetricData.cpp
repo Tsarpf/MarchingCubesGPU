@@ -194,8 +194,11 @@ void VolumetricData::createRandomNoise()
 				//float result = 1.0f - (getDistance(pos, center) / maxDistance);
 				//int idx = getIdx(x, y, z);
 				//m_data[idx] = result;
+				float valueX = (float)x / (float)m_width * 3.5f;
+				float valueY = (float)y / (float)m_height * 3.5f;
+				float valueZ = (float)z / (float)m_depth * 3.5f;
 
-				double result = m_perlinNoise.GetValue((float)x / (float)m_width, (float)y / (float)m_height, (float)z / (float)m_depth);
+				double result = m_perlinNoise.GetValue(valueX, valueY, valueZ);
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;
 			}

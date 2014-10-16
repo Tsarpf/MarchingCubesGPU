@@ -40,9 +40,9 @@ private:
 	XMFLOAT4 m_dataStep;
 
 	//Window and viewport size
-	UINT m_width = 640;
-	UINT m_height = 480;
-	XMFLOAT4 m_lightPosition;
+	UINT m_width = 1920;
+	UINT m_height = 1080;
+	//XMFLOAT4 m_lightPosition;
 	Utilities m_utils;
 };
 

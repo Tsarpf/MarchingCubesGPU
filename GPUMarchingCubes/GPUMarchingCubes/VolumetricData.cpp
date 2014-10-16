@@ -194,9 +194,9 @@ void VolumetricData::createRandomNoise()
 				//float result = 1.0f - (getDistance(pos, center) / maxDistance);
 				//int idx = getIdx(x, y, z);
 				//m_data[idx] = result;
-				float valueX = (float)x / (float)m_width * 3.5f;
-				float valueY = (float)y / (float)m_height * 3.5f;
-				float valueZ = (float)z / (float)m_depth * 3.5f;
+				float valueX = (float)x / (float)m_width * 3.0f;
+				float valueY = (float)y / (float)m_height * 3.0f;
+				float valueZ = (float)z / (float)m_depth * 3.0f;
 
 				double result = m_perlinNoise.GetValue(valueX, valueY, valueZ);
 				int idx = getIdx(x, y, z);
@@ -223,16 +223,16 @@ void VolumetricData::createBumpySphere()
 				float maxDistance = m_width / 2.0f;
 				float result = 1.0f - (getDistance(pos, center) / maxDistance);
 
-				float xdivide = (float)m_width / 4.0f;
+				float xdivide = (float)m_width / 8.0f;
 				//float xdivide = (float)m_width;
-				float ydivide = (float)m_height / 4.0f;
+				float ydivide = (float)m_height / 8.0f;
 				//float ydivide = (float)m_height;
-				float zdivide = (float)m_depth / 4.0f;
+				float zdivide = (float)m_depth / 8.0f;
 				//float zdivide = (float)m_depth;
 				float bump = (float)m_perlinNoise.GetValue((float)x / xdivide, (float)y / ydivide, (float)z / zdivide);
 
 				//result += bump / 10.0f;
-				result += bump / 1.5f;
+				result += bump / 6.5f;
 
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;

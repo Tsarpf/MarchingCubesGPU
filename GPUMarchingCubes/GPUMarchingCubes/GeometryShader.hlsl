@@ -43,10 +43,12 @@ cbuffer cbOncePerAppRun : register (b1)
 	float4 dataStep;
 }
 
+/*
 float3 cubePos(int i, float4 position)
 {
 	return position.xyz + decal[i].xyz;
 }
+*/
 
 /* Interpolates between the given points by a specific amount
 Used to find the vertex position on the cube's edge*/
@@ -82,7 +84,7 @@ float4 getProjectionPos(float4 position)
 }
 
 /*
-Geometry shader main function. The process is described in the documentation better than it can be done here.
+Geometry shader main function. The process is better described in the documentation than here.
 */
 [maxvertexcount(18)]
 void main(point GS_INPUT input[1], inout TriangleStream<GS_OUTPUT> triStream)

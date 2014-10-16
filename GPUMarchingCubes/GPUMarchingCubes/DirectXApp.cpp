@@ -105,8 +105,8 @@ HRESULT DirectXApp::setupVisualizationData()
 {
 	int height, depth, width;
 	//height = depth = width = 32;
-	//height = depth = width = 64;
-	height = depth = width = 128;
+	height = depth = width = 64;
+	//height = depth = width = 128;
 	//height = depth = width = 256;
 
 	m_dataStep = XMFLOAT4(1.0f / (float)width, 1.0f / (float)height, 1.0f / (float)depth, 1);
@@ -597,8 +597,10 @@ double y = y0 + r * Math.Sin(theta * Math.PI / 180);
 	double centerX = 0;
 	double centerZ = 0;
 
-	double modulus = fmod(m_utils.GetClock(), 5000.0);
-	double multiplier = modulus / 5000.0;
+	float divisor = 25000;
+	double modulus = fmod(0, divisor);
+	//double modulus = fmod(m_utils.GetClock(), divisor);
+	double multiplier = modulus / divisor;
 	double degrees = 360.0 * multiplier;
 
 	double x = centerX + radius * cos(degrees * PI / 180.0);
@@ -617,7 +619,20 @@ double y = y0 + r * Math.Sin(theta * Math.PI / 180);
 	cb.m_World = XMMatrixTranspose(g_World);
 	cb.m_View = XMMatrixTranspose(g_View);
 	cb.m_Projection = XMMatrixTranspose(g_Projection);
-	cb.m_LightPosition = XMFLOAT4(0, 5.0f, -5.0f, 0);
+
+	divisor = 2500;
+	modulus = fmod(m_utils.GetClock(), divisor);
+	multiplier = modulus / divisor;
+	multiplier = -multiplier;
+	degrees = 360.0 * multiplier;
+
+	radius = 5.0f;
+
+	x = centerX + radius * cos(degrees * PI / 180.0);
+	z = centerZ + radius * sin(degrees * PI / 180.0);
+
+	//cb.m_LightPosition = XMFLOAT4(0, 5.0f, -5.0f, 0);
+	cb.m_LightPosition = XMFLOAT4(x, 3.0f, z, 0);
 
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 

@@ -1,4 +1,4 @@
-TiraLabra
+DirectX Marching Cubes
 =========
 
 Marching Cubes algorithm implementation with DirectX / C++. Heavy lifting done on the geometry shader

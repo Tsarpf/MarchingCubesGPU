@@ -1,9 +1,13 @@
 #include "VolumetricData.h"
+#include <random>
+#include <cstdlib>
+#include <time.h>
 
 
 VolumetricData::VolumetricData(int Height, int Width, int Depth, XMFLOAT3 CubeSize, XMFLOAT3 CubeStep) : 
 m_height(Height), m_width(Width), m_depth(Depth), m_cubeSize(CubeSize), m_cubeStep(CubeStep)
 {
+	srand(time(NULL));
 }
 VolumetricData::~VolumetricData()
 {
@@ -26,16 +30,31 @@ ID3D11ShaderResourceView* VolumetricData::GetTriTableShaderResource()
 /*
 Initializes volumetric data stuff
 */
-HRESULT VolumetricData::CreateTestData()
+HRESULT VolumetricData::CreateTestData(const char type)
 {
+
+
+	double result = rand() % 10000;
 
 	/***********
 	Use one of these to set up the data 	
 	************/
-	//createDataArray();
-	createRandomNoise();
-	//createBumpySphere();
-	//createSphere();
+	switch (type)
+	{
+	case '1':
+		createRandomNoise(result);
+		break;
+	case '2':
+		createBumpySphere(result);
+		break;
+	case '3':
+		createSphere();
+		break;
+	case '4':
+		createDataArray();
+		break;
+
+	}
 
 
 	createTextureDesc();
@@ -178,7 +197,7 @@ void VolumetricData::createDataArray()
 }
 
 //Simply samples coherent noise at every point of the array
-void VolumetricData::createRandomNoise()
+void VolumetricData::createRandomNoise(double offset)
 {
 	m_data = new float[m_depth*m_height*m_width];
 	for (UINT z = 0; z < m_depth; z++)
@@ -198,7 +217,7 @@ void VolumetricData::createRandomNoise()
 				float valueY = (float)y / (float)m_height * 3.0f;
 				float valueZ = (float)z / (float)m_depth * 3.0f;
 
-				double result = m_perlinNoise.GetValue(valueX, valueY, valueZ);
+				double result = m_perlinNoise.GetValue(valueX + offset, valueY + offset, valueZ + offset);
 				int idx = getIdx(x, y, z);
 				m_data[idx] = result;
 			}
@@ -207,7 +226,7 @@ void VolumetricData::createRandomNoise()
 }
 
 //Creates a sphere but adds offsets using noise to make it bumpy
-void VolumetricData::createBumpySphere()
+void VolumetricData::createBumpySphere(double offset)
 {
 	XMFLOAT3 center = XMFLOAT3(m_width / 2.0f, m_height / 2.0f, m_depth / 2.0f);
 	m_data = new float[m_depth*m_height*m_width];
@@ -229,7 +248,10 @@ void VolumetricData::createBumpySphere()
 				//float ydivide = (float)m_height;
 				float zdivide = (float)m_depth / 8.0f;
 				//float zdivide = (float)m_depth;
-				float bump = (float)m_perlinNoise.GetValue((float)x / xdivide, (float)y / ydivide, (float)z / zdivide);
+				float bump = (float)m_perlinNoise.GetValue(
+					(float)x / xdivide + offset,
+					(float)y / ydivide + offset,
+					(float)z / zdivide + offset);
 
 				//result += bump / 10.0f;
 				result += bump / 6.5f;

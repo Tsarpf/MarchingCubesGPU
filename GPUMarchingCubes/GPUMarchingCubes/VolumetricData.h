@@ -42,7 +42,7 @@ public:
 	VolumetricData(int Width, int Height, int Depth, XMFLOAT3 CubeSize, XMFLOAT3 CubeStep);
 	~VolumetricData();
 
-	HRESULT CreateTestData();
+	HRESULT CreateTestData(const char);
 	ID3D11ShaderResourceView* GetShaderResource();
 	void GetDecals(OnceBuffer&);
 	int GetVertices(SimpleVertex** outVertices);
@@ -62,8 +62,8 @@ private:
 	//Functions for creating noise data
 	void createDataArray();
 	void createSphere();
-	void createRandomNoise();
-	void createBumpySphere();
+	void createRandomNoise(double);
+	void createBumpySphere(double);
 
 	float getDistance(XMFLOAT3, XMFLOAT3);
 	int getIdx(int,int,int);

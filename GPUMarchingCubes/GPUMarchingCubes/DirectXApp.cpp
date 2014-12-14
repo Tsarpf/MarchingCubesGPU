@@ -36,6 +36,12 @@ ID3D11SamplerState* g_SamplerPoint = NULL;
 ID3D11RasterizerState* g_RasterizerState = NULL;
 
 
+bool g_AutoRotateCamera = true;
+bool g_AutoRotateLight = true;
+double g_CameraRotation = 0;
+DirectXApp* g_App = NULL;
+
+
 
 //Matrices used for 3D transformations
 XMMATRIX g_World;
@@ -46,7 +52,7 @@ XMMATRIX g_Projection;
 /*
 Constructor
 */
-DirectXApp::DirectXApp()
+DirectXApp::DirectXApp() : m_volumetricData(NULL)
 {
 }
 
@@ -72,7 +78,7 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (FAILED(initDX()))
         return false;
 
-	if (FAILED(setupVisualizationData()))
+	if (FAILED(setupVisualizationData('1')))
 		return false;
 
 	if (FAILED(createDepthStencil()))
@@ -98,10 +104,17 @@ bool DirectXApp::Init(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     return true;
 }
 
+void DirectXApp::SetVisualizationData(const char type)
+{
+	setupVisualizationData(type);
+	setupVertexAndIndexAndSOBuffer();
+}
+
+
 /*
 Generates and sets up all density data etc.
 */
-HRESULT DirectXApp::setupVisualizationData()
+HRESULT DirectXApp::setupVisualizationData(const char type)
 {
 	int height, depth, width;
 	//height = depth = width = 32;
@@ -115,9 +128,14 @@ HRESULT DirectXApp::setupVisualizationData()
 	//2.0f to decrease density
 	XMFLOAT3 cubeStep(2.0f / cubeSize.x, 2.0f / cubeSize.y, 2.0f / cubeSize.z);
 
+	if (m_volumetricData != NULL)
+	{
+		delete m_volumetricData;
+		m_volumetricData = NULL;
+	}
 	m_volumetricData = new VolumetricData(width, height, depth, cubeSize, cubeStep);
 	HRESULT  hr;
-	if (FAILED(hr = m_volumetricData->CreateTestData()))
+	if (FAILED(hr = m_volumetricData->CreateTestData(type)))
 	{
 		delete m_volumetricData;
 		return hr;
@@ -546,6 +564,7 @@ Starts running the window message loop which handles messages to the window and 
 */
 bool DirectXApp::Run()
 {
+	g_App = this;
     MSG msg = { 0 };
 	m_utils.StartClock();
     while(msg.message != WM_QUIT)
@@ -589,6 +608,12 @@ void DirectXApp::render()
 	g_ImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 
+	char helpText[25];
+
+	sprintf_s(helpText, sizeof(helpText), "Moi jee");
+	OutputDebugStringA(helpText);
+
+
 	double radius = 2.5;
 
 /*double x = x0 + r * Math.Cos(theta * Math.PI / 180);
@@ -598,8 +623,22 @@ double y = y0 + r * Math.Sin(theta * Math.PI / 180);
 	double centerZ = 0;
 
 	float divisor = 25000;
-	double modulus = fmod(0, divisor);
-	//double modulus = fmod(m_utils.GetClock(), divisor);
+
+	//static double clock = m_utils.GetClock();
+
+	double modulus;
+	
+	if (g_AutoRotateCamera)
+	{
+		modulus = fmod(m_utils.GetClock(), divisor);
+	}
+	else
+	{
+		modulus = fmod(g_CameraRotation, divisor);
+	}
+
+
+
 	double multiplier = modulus / divisor;
 	double degrees = 360.0 * multiplier;
 
@@ -631,8 +670,15 @@ double y = y0 + r * Math.Sin(theta * Math.PI / 180);
 	x = centerX + radius * cos(degrees * PI / 180.0);
 	z = centerZ + radius * sin(degrees * PI / 180.0);
 
-	//cb.m_LightPosition = XMFLOAT4(0, 5.0f, -5.0f, 0);
-	cb.m_LightPosition = XMFLOAT4(x, 3.0f, z, 0);
+
+	if (g_AutoRotateLight)
+	{
+		cb.m_LightPosition = XMFLOAT4(x, 3.0f, z, 0);
+	}
+	else
+	{
+		cb.m_LightPosition = XMFLOAT4(0, 5.0f, -5.0f, 0);
+	}
 
 	g_ImmediateContext->UpdateSubresource(g_ConstantBuffer, 0, NULL, &cb, 0, 0);
 
@@ -732,6 +778,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
+		case WM_KEYDOWN:
+			switch (wParam)
+			{
+			case VK_LEFT:
+				g_AutoRotateCamera = false;
+				g_CameraRotation += 100;
+				break;
+			case VK_RIGHT:
+				g_AutoRotateCamera = false;
+				g_CameraRotation -= 100;
+				break;
+			case VK_SPACE:
+				g_AutoRotateLight = !g_AutoRotateLight;
+				break;
+			case VK_F1:
+				g_App->SetVisualizationData('1');
+				break;
+			case VK_F2:
+				g_App->SetVisualizationData('2');
+				break;
+			case VK_F3:
+				g_App->SetVisualizationData('3');
+				break;
+			case VK_F4:
+				g_App->SetVisualizationData('4');
+				break;
+			default:
+				break;
+			}
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
     }

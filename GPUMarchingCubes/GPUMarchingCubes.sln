@@ -1,14 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUMarchingCubes", "GPUMarchingCubes\GPUMarchingCubes.vcxproj", "{3671FBD1-AE4D-41E7-83B0-43A9D0A06E6D}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUMarchingCubesTest", "GPUMarchingCubesTest\GPUMarchingCubesTest.vcxproj", "{AB2F99FC-896F-4B86-A007-62DE70AC7A00}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3671FBD1-AE4D-41E7-83B0-43A9D0A06E6D} = {3671FBD1-AE4D-41E7-83B0-43A9D0A06E6D}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,10 +15,6 @@ Global
 		{3671FBD1-AE4D-41E7-83B0-43A9D0A06E6D}.Debug|Win32.Build.0 = Debug|Win32
 		{3671FBD1-AE4D-41E7-83B0-43A9D0A06E6D}.Release|Win32.ActiveCfg = Release|Win32
 		{3671FBD1-AE4D-41E7-83B0-43A9D0A06E6D}.Release|Win32.Build.0 = Release|Win32
-		{AB2F99FC-896F-4B86-A007-62DE70AC7A00}.Debug|Win32.ActiveCfg = Debug|Win32
-		{AB2F99FC-896F-4B86-A007-62DE70AC7A00}.Debug|Win32.Build.0 = Debug|Win32
-		{AB2F99FC-896F-4B86-A007-62DE70AC7A00}.Release|Win32.ActiveCfg = Release|Win32
-		{AB2F99FC-896F-4B86-A007-62DE70AC7A00}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

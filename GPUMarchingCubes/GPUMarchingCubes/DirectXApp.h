@@ -24,6 +24,7 @@ public:
     ~DirectXApp();
     bool Init(HINSTANCE, HINSTANCE, LPWSTR, int);
     bool Run();
+	void SetVisualizationData(const char);
 private:
     HRESULT createWindow(HINSTANCE, int);
     HRESULT initDX();
@@ -33,7 +34,7 @@ private:
 	HRESULT setupConstantBuffer();
 	HRESULT createDepthStencil();
 	HRESULT setupVertexAndIndexAndSOBuffer();
-	HRESULT setupVisualizationData();
+	HRESULT setupVisualizationData(const char);
 
 	VolumetricData* m_volumetricData;
 

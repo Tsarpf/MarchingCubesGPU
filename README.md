@@ -11,6 +11,9 @@ For now the only way to use the program is to download the project, fix DirectX 
 
 ##Example outputs
 
+Ugly gif of the thing live
+![Ugly gif of the thing live](http://i.gyazo.com/1f624e77c0cff991dd9cc0eaa951f526.gif)
+
 A sphere which we've distorted with coherent 3d noise (used VolumetricData::createBumpySphere())
 ![A sphere which we've distorted with coherent 3d noise](http://i.imgur.com/dJnqqzc.jpg)
 

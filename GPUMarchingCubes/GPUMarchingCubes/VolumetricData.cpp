@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <time.h>
 
+#pragma comment(lib, "libnoise.lib")
 
 VolumetricData::VolumetricData(int Height, int Width, int Depth, XMFLOAT3 CubeSize, XMFLOAT3 CubeStep) : 
 m_height(Height), m_width(Width), m_depth(Depth), m_cubeSize(CubeSize), m_cubeStep(CubeStep)

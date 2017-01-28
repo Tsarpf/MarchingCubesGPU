@@ -1,10 +1,11 @@
 #pragma once
 
 #include <D3D11.h>
-#include <xnamath.h>
+#include <DirectXMath.h>
 #include <noise\noise.h>
 //#include "DirectXApp.h"
 //#include <D3DX11.h>
+using namespace DirectX;
 
 extern ID3D11Device* g_d3dDevice;
 //extern int g_TriTable[256][16];

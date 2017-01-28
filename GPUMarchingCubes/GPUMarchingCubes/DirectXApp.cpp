@@ -1,5 +1,7 @@
 #include "DirectXApp.h"
 
+#pragma comment(lib, "D3DCompiler.lib")
+#pragma comment(lib, "D3D11.lib")
 
 //Certain windows unique identifier
 HINSTANCE g_hInst = NULL;
@@ -442,8 +444,8 @@ HRESULT DirectXApp::compileShaderFromFile(WCHAR* FileName, LPCSTR EntryPoint, LP
 	//DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
 
-	hr = D3DX11CompileFromFile(FileName, NULL, NULL, EntryPoint, ShaderModel,
-		dwShaderFlags, NULL, NULL, OutBlob, &errorBlob, NULL);
+	hr = D3DCompileFromFile(FileName, NULL, NULL, EntryPoint, ShaderModel,
+		dwShaderFlags, NULL, OutBlob, &errorBlob);
 
 	if (FAILED(hr))
 	{

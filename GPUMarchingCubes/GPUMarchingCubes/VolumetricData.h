@@ -3,12 +3,9 @@
 #include <D3D11.h>
 #include <DirectXMath.h>
 #include <noise\noise.h>
-//#include "DirectXApp.h"
-//#include <D3DX11.h>
 using namespace DirectX;
 
 extern ID3D11Device* g_d3dDevice;
-//extern int g_TriTable[256][16];
 extern int g_TriTable[][16];
 
 /*vertex decals description*/
@@ -16,15 +13,7 @@ struct OnceBuffer
 {
 	XMFLOAT4 decal[8];
 	XMFLOAT4 dataStep;
-	//XMFLOAT3 decal1;
-	//XMFLOAT3 decal2;
-	//XMFLOAT3 decal3;
-	//XMFLOAT3 decal4;
-	//XMFLOAT3 decal5;
-	//XMFLOAT3 decal6;
-	//XMFLOAT3 decal7;
 };
-
 
 /*
 Vertex description

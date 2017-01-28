@@ -610,17 +610,12 @@ void DirectXApp::render()
 	g_ImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 
-	char helpText[25];
-
-	sprintf_s(helpText, sizeof(helpText), "Moi jee");
-	OutputDebugStringA(helpText);
-
+	//char helpText[25];
+	//sprintf_s(helpText, sizeof(helpText), "Moi jee");
+	//OutputDebugStringA(helpText);
 
 	double radius = 2.5;
 
-/*double x = x0 + r * Math.Cos(theta * Math.PI / 180);
-double y = y0 + r * Math.Sin(theta * Math.PI / 180);
-*/
 	double centerX = 0;
 	double centerZ = 0;
 

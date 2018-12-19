@@ -1,7 +1,10 @@
-DirectX Marching Cubes
+DirectX GPU Marching Cubes
 =========
 
 Marching Cubes algorithm implementation with DirectX / C++. Heavy lifting done on the geometry shader.
+
+It's an old hobby project, the code could be way cleaner :)
+
 
 ## How to use
 For now the only way to use the program is to download the project, fix DirectX SDK paths if needed, run the project and observe the results.
